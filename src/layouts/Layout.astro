@@ -16,14 +16,13 @@ const { title } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body>
+	<body class="bg-dark_blue">
 	<slot />
 	</body>
 </html>
 <style is:global>
 	html {
 		font-family: "JetBrains Mono", sans-serif;
-		background: #13151a;
 	}
 	code {
 		font-family:
