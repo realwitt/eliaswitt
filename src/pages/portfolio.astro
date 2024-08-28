@@ -2,10 +2,29 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="FakerMaker3000">
-    <main class="mx-10">
-        <div class="text-subtle_blue">
-            portfolio overview will go here
+<Layout title="portfolio">
+    <main>
+        <div class="w-full mt-16 max-w-[1300px] mx-auto px-10">
+            <h1 class="text-light_blue text-4xl font-bold">
+                projects
+            </h1>
+            <h5 class="text-light_blue text-xs mt-5">some of the things I've made and lessons I've learned</h5>
         </div>
+
+
+        <!-- big container -->
+        <div class="flex flex-row max-w-[1440px] mt-24 mx-auto">
+            <div class="grow h-0.5 bg-line mt-3.5"/>
+            <div class="flex-none flex flex-row justify-start w-full max-w-[1300px]">
+                <div class="w-7 h-0.5 bg-line mt-3.5" />
+                <h3 class="flex-none pr-3 h-full pt-[3px] text-base text-accent_purple rounded-r-md pl-3">
+                    fakerMaker3000
+                </h3>
+                <div class="flex-1 bg-line h-0.5 mt-3.5 min-w-[100px] max-w-[600px]" />
+                <div class="grow mt-3.5 w-ful" />
+            </div>
+            <div class="grow"></div>
+        </div>
+
     </main>
 </Layout>
