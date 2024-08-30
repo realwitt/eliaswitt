@@ -16,9 +16,9 @@ const {title} = Astro.props;
     <meta name="generator" content={Astro.generator}/>
     <title>{title}</title>
 </head>
-<body class="bg-dark_blue">
+<body class="bg-dark_blue min-h-[100vh]">
 <!-- navbar -->
-<div class="flex mt-3 mb-2 h-10 max-w-[1300px] mx-auto px-10">
+<div class="flex md:mt-3 mb-2 h-10 max-w-[1300px] mx-auto px-10">
     <!-- logo -->
     <div class="relative w-min top-1 left-0">
         <a class="group" href="/">
@@ -38,24 +38,44 @@ const {title} = Astro.props;
 
     </div>
 
-    <div class="ml-2 group">
-        <p class="text-subtle_blue text-xs mt-0.5 ml-16 -mb-3">
-            <span class="group-hover:text-blue-400 transition duration-500">***</span><span class="transition duration-500 group-hover:text-red-500 text-nowrap">-~~-~~</span>
+    <!-- 'murica -->
+    <div class="ml-2 group invisible absolute md:visible md:relative">
+        <p class="text-subtle_blue text-[10px] mt-1 ml-16 -mb-3">
+            <span class="group-hover:text-blue-400 transition duration-500">***</span><span class="text-line transition font-black duration-500 group-hover:text-red-500 text-nowrap">-~~-~~</span>
         </p>
-        <p class="text-subtle_blue text-xs mt-1 ml-16 -mb-4">
-            <span class="transition duration-500 group-hover:text-blue-400">***</span><span class="transition duration-500 group-hover:text-white text-nowrap">-~~-~~</span>
+        <p class="text-subtle_blue text-[10px] mt-1 ml-16 -mb-4">
+            <span class="transition duration-500 group-hover:text-blue-400">***</span><span class="transition font-black duration-500 group-hover:text-white text-nowrap">-~~-~~</span>
         </p>
-        <p class="text-subtle_blue text-xs mt-2 ml-16 -mb-3">
-            <span class="transition duration-500 group-hover:text-red-500 text-nowrap">-~~-~~-~~</span>
+        <p class="text-subtle_blue text-[10px] mt-2 ml-16 -mb-3">
+            <span class="transition duration-500 text-line group-hover:text-red-500 text-nowrap font-black">-~~-~~-~~</span>
         </p>
-        <p class="text-subtle_blue text-xs mt-1 ml-16 -mb-3">
-            <span class="transition duration-500 group-hover:text-white">-~~-~~-~~</span>
+        <p class="text-subtle_blue text-[10px] mt-1 ml-16 -mb-3">
+            <span class="transition duration-500 group-hover:text-white font-black">-~~-~~-~~</span>
+        </p>
+    </div>
+
+    <!-- 'murica -->
+    <div class="group md:invisible text-sm font-black mr-2">
+        <p class="text-dark_blue mt-1 ml-16 -mb-5">
+            <span class="invisible group-hover:text-dark_blue transition duration-500">@</span><span class="text-subtle_blue group-hover:text-blue-400 transition duration-50">_</span><span class="text-line transition font-black duration-500 group-hover:text-red-500 text-nowrap">__</span><span class="text-line transition font-black duration-500 group-hover:text-red-500 text-nowrap">_</span>
+        </p>
+        <p class="mt-1 ml-16 -mb-5">
+            <span class="invisible text-dark_blue group-hover:text-dark_blue transition duration-500">@</span><span class="text-subtle_blue group-hover:text-blue-400 transition duration-50">_</span><span class="text-line transition font-black duration-500 group-hover:text-white text-nowrap">_</span><span class="text-line transition font-black duration-500 group-hover:text-white text-nowrap">__</span>
+        </p>
+        <p class="text-subtle_blue mt-1 ml-16 -mb-6">
+            <span class="group-hover:text-blue-400 transition duration-500">@_</span><span></span><span class="text-line transition font-black duration-500 group-hover:text-red-500 text-nowrap">__</span><span class="text-line transition font-black duration-500 group-hover:text-red-500 text-nowrap">_</span>
+        </p>
+        <p class="text-subtle_blue mt-2 ml-16 -mb-6">
+            <span class="transition duration-500 text-line group-hover:text-white text-nowrap font-black">_</span><span class="text-line group-hover:text-white">__</span><span class="text-line group-hover:text-white">__</span>
+        </p>
+        <p class="text-subtle_blue mt-2 ml-16 -mb-3">
+            <span class="transition duration-500 text-line group-hover:text-red-500 text-nowrap font-black">__</span><span class="text-line group-hover:text-red-500">__</span><span class="text-line group-hover:text-red-500">_</span>
         </p>
     </div>
 
     <div class="flex-1" />
     <!-- links -->
-    <a class="text-subtle_blue mr-10 mt-auto" href="/portfolio">portfolio</a>
+    <a class="text-subtle_blue mr-5 md:mr-10 mt-auto" href="/portfolio">portfolio</a>
     <a class="text-subtle_blue mt-auto" href="/musings">musings</a>
 </div>
 
