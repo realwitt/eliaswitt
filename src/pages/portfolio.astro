@@ -37,7 +37,10 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="max-w-[1300px] px-5 md:px-10 mx-auto mt-6 md:mt-4">
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue">stack</h3>
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-5">about</h3>
+            <p class="text-sm md:text-xs text-light_blue max-w-[700px]">FakerMaker3000 allows you to create a csv of fake data using the Java datafaker library, and you can save your schema using a UUID so you can come back and modify it later.</p>
+
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-5">stack</h3>
             <ul role="list" class="text-sm md:text-xs marker:text-light_blue list-disc pl-3.5 text-light_blue">
                 <li>Kotlin, Spring</li>
                 <li>Astro, React, TypeScript, tailwindcss</li>
@@ -45,9 +48,6 @@ import Layout from '../layouts/Layout.astro';
                 <li>docker</li>
                 <li>postgres</li>
             </ul>
-
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-5">about</h3>
-            <p class="text-sm md:text-xs text-light_blue max-w-[700px]">FakerMaker3000 allows you to create a csv of fake data using the Java datafaker library, and you can save your schema using a UUID so you can come back and modify it later.</p>
 
             <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-5">motivation</h3>
             <p class="text-sm md:text-xs text-light_blue max-w-[700px]">After having to create a CSV for an internal app at work and trying to test it, I realized making test data by hand was an absolute pain (only setting the entity fields you’re testing). To mitigate this I spent two days at work making generators that used valid business logic for the two db entities I was working with so I could easily create 100 employers with 1000 employees each. It made testing things way easier and I thought it would be fun to expand on that.</p>

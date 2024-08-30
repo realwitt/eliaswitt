@@ -1,28 +1,35 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Header from "../components/fakermaker/Header.astro";
+
+
 ---
 
 <Layout title="FakerMaker3000">
     <main>
-        <!--<div class="text-subtle_blue text-xs mt-5 mx-10">projects > fakerMaker3000</div>-->
-
         <div class="w-full mt-16 max-w-[1300px] mx-auto px-5 md:px-10">
             <h1 class="text-4xl font-black text-light_blue">
                 fakerMaker3000
             </h1>
-            <h5 class="text-accent_pink text-xs">powered by <a class="font-semibold underline" href="https://github.com/datafaker-net/datafaker">Datafaker</a></h5>
-            <h5 class="text-light_blue text-sm md:text-xs mt-4 md:mt-3">some of the things I've made and lessons I've learned</h5>
+            <h5 class="text-subtle_blue text-xs mt-1 ml-1">powered by <a class="font-semibold underline" href="https://github.com/datafaker-net/datafaker">Datafaker</a></h5>
         </div>
 
+        <div class="w-full mt-5 max-w-[1300px] mx-auto px-5 md:px-10">
 
-        <div class="w-full mt-16 max-w-[1300px] mx-auto px-5 md:px-10">
-            <p class="text-subtle_blue text-sm mt-5">
+            <p class="text-light_blue text-sm mt-5">
                 Generate random fake data for whatever you want.<br/>
-                Import a schema using SQL or a Java JPA model. <br/>
-                Export data to csv or generate a java class for your
-                data.
             </p>
+
         </div>
+
+
+        <Header title="save or restore session" />
+
+
+        <Header title="fakers" />
+        <Header title="makers" />
+        <Header title="active" />
+        <Header title="data" />
 
         <div class="mt-10 px-10 max-w-[1300] mx-auto">
         </div>
