@@ -1,5 +1,6 @@
 ---
 import {Menu} from "../components/Menu";
+import {Copyright} from "../components/Copyright";
 interface Props {
     title: string;
 }
@@ -18,10 +19,10 @@ const {title} = Astro.props;
     <meta name="generator" content={Astro.generator}/>
     <title>{title}</title>
 </head>
-<body class="bg-dark_blue h-full">
+<body class="flex flex-col bg-dark_blue min-h-dvh">
 
 <!-- navbar -->
-<div class="flex md:mt-3 mb-2 h-10 max-w-[1300px] mx-auto md:px-10">
+<div class="flex-none w-full flex md:mt-3 mb-2 h-10 max-w-[1300px] mx-auto md:px-10">
     <!-- logo -->
     <div class="relative w-min top-1 md:left-0 right-5 z-10 pl-10 md:pl-0">
         <a class="group" href="/">
@@ -70,14 +71,18 @@ const {title} = Astro.props;
     <!-- mobile menu -->
     <Menu client:load />
 </div>
-
 <!-- line -->
 <div class="h-0.5 w-full bg-line mb-1 max-w-[1240px] mx-auto" />
 
 <slot/>
+<div class="grow" />
 
+<footer class="flex px-5 md:px-10 pb-3">
+    <Copyright client:load />
+</footer>
 </body>
 </html>
+
 <style is:global>
     html {
         font-family: "JetBrains Mono", sans-serif;
