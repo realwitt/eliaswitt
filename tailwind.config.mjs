@@ -12,6 +12,8 @@ export default {
 				accent_purple: '#BDB2FF',
 				line: '#424E70',
 			},
+			keyframes: {
+			}
 		},
 	},
 	plugins: [],
