@@ -1,6 +1,6 @@
 import {useState} from "react";
 
-export function Menu(): any {
+export function Menu() {
     const [showMenu, setShowMenu]  = useState(false)
 
     return (

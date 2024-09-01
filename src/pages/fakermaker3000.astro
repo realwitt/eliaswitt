@@ -1,6 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Header from "../components/fakermaker/Header.astro";
+import {Fakers} from "../components/fakermaker/Fakers";
+import {Makers} from "../components/fakermaker/Makers";
+import {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
+
+const temp = {
+    "fakers": [
+        "Harry Potter",
+        "Lord of the Rings",
+        "Rick and Morty",
+        "Game of Thrones"
+    ],
+    "makers": [ // order matters on this
+        {"name" : "name", "options" : ["first", "last", "company"]},
+        {"name" : "email"},
+        {"name" : "phone", "options" : ["with country code"]},
+        {"name" : "address 1"},
+        {"name" : "address 2"},
+        {"name" : "state"},
+        {"name" : "city"},
+        {"name" : "zip"},
+        {"name" : "price", "options" : ["start", "end"]},
+        {"name" : "date", "options" : ["start", "end"]}
+    ]
+}
+
+const availableSchemaOptions : AvailableSchemaOptions = temp // await fetch('https://example.com/movies.json').then((response) =>
+//     response.json()
+// );
 
 
 ---
@@ -24,12 +52,19 @@ import Header from "../components/fakermaker/Header.astro";
 
 
         <Header title="save or restore session" />
-
+        <!-- todo  -->
 
         <Header title="fakers" />
+        <Fakers availableSchemaOptions={availableSchemaOptions} client:load />
+
         <Header title="makers" />
+        <Makers availableSchemaOptions={availableSchemaOptions} client:load />
+
         <Header title="active" />
+        <!-- todo  -->
+
         <Header title="data" />
+        <!-- todo  -->
 
         <div class="mt-10 px-10 max-w-[1300] mx-auto">
         </div>
