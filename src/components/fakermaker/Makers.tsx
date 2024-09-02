@@ -11,9 +11,7 @@ export function Makers({availableSchemaOptions} : FakerProps) {
     const makers = []
     for (let i = 0; i < availableSchemaOptions.makers.length; i++) {
         makers.push(
-            <div>
-                <Button title={availableSchemaOptions.makers[i].name} clicked={() => console.log('clicked')} />
-            </div>
+            <Button title={availableSchemaOptions.makers[i].name} clicked={() => console.log('clicked')} showCount={true} />
         )
     }
     return makers
