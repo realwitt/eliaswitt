@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import {FakerMaker3000} from "../components/fakermaker/FakerMaker3000";
-import {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
+import type {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
 
 const temp = {
     "fakers": [
@@ -24,9 +24,7 @@ const temp = {
     ]
 }
 
-const availableSchemaOptions : AvailableSchemaOptions = temp // await fetch('https://example.com/movies.json').then((response) =>
-//     response.json()
-// );
+const availableSchemaOptions : AvailableSchemaOptions = temp
 
 
 ---
