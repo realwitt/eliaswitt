@@ -10,7 +10,7 @@ export function Button({title, clicked, showCount}: ButtonProps) {
     const [timesClicked, setTimesClicked] = useState(0)
     return (
         <button
-            className={`group ${((!showCount && timesClicked % 2 !== 0) || showCount && timesClicked > 0) ? 'bg-accent_pink hover:border-accent_purple' : 'bg-accent_purple hover:border-accent_pink'} border-2 border-transparent active:bg-subtle_blue relative text-sm font-semibold transition duration-200 text-nowrap mr-7 mb-5 px-[18px] py-0.5 rounded-lg rounded-tr-md rounded-bl-md`}
+            className={`group ${((!showCount && timesClicked % 2 !== 0) || showCount && timesClicked > 0) ? 'bg-accent_pink hover:border-accent_purple' : 'bg-accent_purple hover:border-accent_pink'} border-2 border-transparent active:bg-subtle_blue relative text-sm font-semibold transition duration-200 text-nowrap mr-7 mb-5 px-[18px] pt-0.5 pb-[2.5px] rounded-lg`}
             onClick={() => {
                 clicked();
                 setTimesClicked(timesClicked < 100 ? timesClicked + 1 : timesClicked)
