@@ -2,14 +2,15 @@ import type {AvailableSchemaOptions} from "./types/AvailableSchemaOptions";
 import {Button} from "./Button.tsx";
 
 type FakerProps = {
-    availableSchemaOptions: AvailableSchemaOptions
+    availableFakers: Array<string>
+    updatedFakerIndex(index: number): void
 }
 
-export function Fakers({availableSchemaOptions} : FakerProps) {
+export function Fakers({availableFakers, updatedFakerIndex} : FakerProps) {
     const fakers = []
-    for (let i = 0; i < availableSchemaOptions.fakers.length; i++) {
+    for (let i = 0; i < availableFakers?.length; i++) {
         fakers.push(
-            <Button title={availableSchemaOptions.fakers[i]} clicked={() => console.log('testing onclick')} />
+            <Button key={i} title={availableFakers[i]} clicked={() => updatedFakerIndex(i)} />
         )
     }
     return fakers

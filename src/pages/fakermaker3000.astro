@@ -1,8 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Header from "../components/fakermaker/Header.astro";
-import {Fakers} from "../components/fakermaker/Fakers";
-import {Makers} from "../components/fakermaker/Makers";
+import {FakerMaker3000} from "../components/fakermaker/FakerMaker3000";
 import {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
 
 const temp = {
@@ -50,27 +48,7 @@ const availableSchemaOptions : AvailableSchemaOptions = temp // await fetch('htt
 
         </div>
 
+        <FakerMaker3000 availableSchemaOptions={availableSchemaOptions} client:load />
 
-        <div class="w-full mt-5 mb-14 max-w-[1300px] mx-auto px-5 md:px-10">
-
-            <Header title="save or restore session" />
-            <!-- todo  -->
-
-            <Header title="fakers" />
-            <Fakers availableSchemaOptions={availableSchemaOptions} client:load />
-
-            <Header title="makers" />
-            <Makers availableSchemaOptions={availableSchemaOptions} client:load />
-
-            <Header title="active" />
-            <!-- todo  -->
-
-            <Header title="data" />
-            <!-- todo  -->
-
-        </div>
-
-        <div class="mt-10 px-10 max-w-[1300] mx-auto">
-        </div>
     </main>
 </Layout>

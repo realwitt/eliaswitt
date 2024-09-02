@@ -1,18 +1,19 @@
-import type {AvailableSchemaOptions} from "./types/AvailableSchemaOptions";
 import {Button} from "./Button.tsx";
 import {useState} from "react";
+import type {Maker} from "./types/Maker";
 
 type FakerProps = {
-    availableSchemaOptions: AvailableSchemaOptions
+    availableMakers: Array<Maker>
+    updatedMakerIndex(index: number): void
 }
 
 
-export function Makers({availableSchemaOptions} : FakerProps) {
-    const makers = []
-    for (let i = 0; i < availableSchemaOptions.makers.length; i++) {
-        makers.push(
-            <Button title={availableSchemaOptions.makers[i].name} clicked={() => console.log('clicked')} showCount={true} />
+export function Makers({availableMakers, updatedMakerIndex} : FakerProps) {
+    const renderedMakers = []
+    for (let i = 0; i < availableMakers?.length; i++) {
+        renderedMakers.push(
+            <Button key={i} title={availableMakers[i].name} clicked={() => updatedMakerIndex(i)} showCount={true} />
         )
     }
-    return makers
+    return renderedMakers
 }

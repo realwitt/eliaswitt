@@ -1,7 +1,4 @@
-type Maker = {
-    name: string
-    options?: Array<string>
-}
+import type {Maker} from "./Maker";
 
 export type AvailableSchemaOptions = {
     fakers: Array<string>
