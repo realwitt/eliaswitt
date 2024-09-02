@@ -24,7 +24,7 @@ const temp = {
     ]
 }
 
-const availableSchemaOptions : AvailableSchemaOptions | null = temp // await fetch('https://example.com/movies.json').then((response) =>
+const availableSchemaOptions : AvailableSchemaOptions = temp // await fetch('https://example.com/movies.json').then((response) =>
 //     response.json()
 // );
 
@@ -52,7 +52,7 @@ const availableSchemaOptions : AvailableSchemaOptions | null = temp // await fet
 
         </div>
 
-        <FakerMaker3000 availableSchemaOptions={availableSchemaOptions} client:load />
+        <FakerMaker3000 client:load availableSchemaOptions={availableSchemaOptions} />
 
     </main>
 </Layout>
