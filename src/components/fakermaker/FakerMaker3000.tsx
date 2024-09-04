@@ -82,26 +82,35 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
 
     if (availableSchemaOptions) {
         return (
-            <div className="w-full mt-5 mb-14 max-w-[1300px] mx-auto px-5 md:px-10">
+            <div className="w-full mt-5 mb-14 max-w-[1440px] mx-auto">
 
                 <Header title="save or restore session"/>
                 {/* todo */}
 
                 <Header title="available fakers"/>
-                <Fakers availableFakers={availableSchemaOptions?.fakers}
-                        updatedFakerIndex={(i) => {
-                            console.log("faker index: " + i)
-                        }}/>
+                <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
+                    <Fakers availableFakers={availableSchemaOptions?.fakers}
+                            updatedFakerIndex={(i) => {
+                                console.log("faker index: " + i)
+                            }}/>
+
+                </div>
 
                 <Header title="available makers"/>
-                <MakersAvailable availableMakers={availableSchemaOptions?.makers}
-                                 updatedMakerIndex={(index) => {addMaker(index); console.log(schema)}}/>
+                <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
+                    <MakersAvailable availableMakers={availableSchemaOptions?.makers}
+                                     updatedMakerIndex={(index) => {addMaker(index); console.log(schema)}}/>
+                </div>
 
                 <Header title="selected makers"/>
-                 <MakersActive schema={schema} />
+                <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
+                    <MakersActive schema={schema} />
+                </div>
 
                 <Header title="data"/>
+                <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
                 {/*todo*/}
+                </div>
 
             </div>
         )
