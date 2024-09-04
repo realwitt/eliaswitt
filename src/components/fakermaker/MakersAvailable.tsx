@@ -7,7 +7,7 @@ type FakerProps = {
 }
 
 
-export function Makers({availableMakers, updatedMakerIndex} : FakerProps) {
+export function MakersAvailable({availableMakers, updatedMakerIndex} : FakerProps) {
     const renderedMakers = []
     for (let i = 0; i < availableMakers?.length; i++) {
         renderedMakers.push(

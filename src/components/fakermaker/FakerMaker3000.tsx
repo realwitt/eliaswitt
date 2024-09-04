@@ -1,6 +1,6 @@
 import {Header} from "./Header.tsx"
 import {Fakers} from "./Fakers.tsx"
-import {Makers} from "./Makers.tsx"
+import {MakersAvailable} from "./MakersAvailable.tsx"
 import type {AvailableSchemaOptions} from "./types/AvailableSchemaOptions"
 import type {Schema} from "./types/Schema"
 import {useState} from "react"
@@ -9,6 +9,7 @@ import type {Maker_Name} from "./types/MakerName"
 import type {Maker_Price} from "./types/MakerPrice"
 import type {Maker_Date} from "./types/MakerDate"
 import type {MakerTypesEnum} from "./enums/MakerTypesEnum";
+import {MakersActive} from "./MakersActive.tsx";
 
 type FakerMaker3000Props = {
     availableSchemaOptions: AvailableSchemaOptions
@@ -40,16 +41,6 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
         return `${count > 0 ? `${type}-${count}` : `${type}`}`
     }
 
-    function isNameUnique(name: string): boolean {
-        if (schema?.makers) {
-            for (let maker of schema?.makers) {
-                if (maker?.nickName === name) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
 
     function addMaker(makerIndex: number) {
         const selectedMaker = availableSchemaOptions.makers[makerIndex]
@@ -96,18 +87,18 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
                 <Header title="save or restore session"/>
                 {/* todo */}
 
-                <Header title="fakers"/>
+                <Header title="available fakers"/>
                 <Fakers availableFakers={availableSchemaOptions?.fakers}
                         updatedFakerIndex={(i) => {
                             console.log("faker index: " + i)
                         }}/>
 
-                <Header title="makers"/>
-                <Makers availableMakers={availableSchemaOptions?.makers}
-                        updatedMakerIndex={(index) => {addMaker(index); console.log(schema)}}/>
+                <Header title="available makers"/>
+                <MakersAvailable availableMakers={availableSchemaOptions?.makers}
+                                 updatedMakerIndex={(index) => {addMaker(index); console.log(schema)}}/>
 
-                <Header title="active"/>
-                {/* <active /> */}
+                <Header title="selected makers"/>
+                 <MakersActive schema={schema} />
 
                 <Header title="data"/>
                 {/*todo*/}
