@@ -1,4 +1,4 @@
-import type {Maker} from "./Maker";
+import type {Maker} from "./AvailableMakers";
 
 export type AvailableSchemaOptions = {
     fakers: Array<string>

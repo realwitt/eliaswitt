@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import {FakerMaker3000} from "../components/fakermaker/FakerMaker3000";
 import type {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
 
-const temp = {
+const temp: AvailableSchemaOptions = {
     "fakers": [
         "Harry Potter",
         "Lord of the Rings",
@@ -11,16 +11,16 @@ const temp = {
         "Game of Thrones"
     ],
     "makers": [ // order matters on this
-        {"name" : "name", "options" : ["first", "last", "company"]},
-        {"name" : "email"},
-        {"name" : "phone", "options" : ["with country code"]},
-        {"name" : "address 1"},
-        {"name" : "address 2"},
-        {"name" : "state"},
-        {"name" : "city"},
-        {"name" : "zip"},
-        {"name" : "price", "options" : ["start", "end"]},
-        {"name" : "date", "options" : ["start", "end"]}
+        {"type" : "NAME", "options" : ["first", "last", "company"]},
+        {"type" : "EMAIL"},
+        {"type" : "PHONE", "options" : ["with country code"]},
+        {"type" : "ADDRESS"},
+        {"type" : "ADDRESS_2"},
+        {"type" : "STATE"},
+        {"type" : "CITY"},
+        {"type" : "ZIP"},
+        {"type" : "PRICE", "options" : ["start", "end"]},
+        {"type" : "DATE", "options" : ["start", "end"]}
     ]
 }
 
