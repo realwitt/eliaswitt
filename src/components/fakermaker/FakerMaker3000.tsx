@@ -38,7 +38,7 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
                 }
             }
         }
-        return `${count > 0 ? `${type}-${count}` : `${type}`}`
+        return `${count > 0 ? `${type}-${count + 1}` : `${type}`}`
     }
 
 
@@ -80,6 +80,14 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
         setSchema({...schema, makers: [...(schema.makers ?? []), maker]})
     }
 
+    function deleteSelectedMaker(index: number) {
+        if (schema.makers) {
+            console.log("before: " + schema.makers)
+            setSchema({...schema, makers: [...schema.makers.filter((_, i) => i !== index)]})
+        }
+    }
+
+
     if (availableSchemaOptions) {
         return (
             <div className="w-full mt-5 mb-14 max-w-[1440px] mx-auto">
@@ -104,7 +112,7 @@ export function FakerMaker3000({availableSchemaOptions}: FakerMaker3000Props) {
 
                 <Header title="selected makers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <MakersActive schema={schema} />
+                    <MakersActive schema={schema} deleteSelectedMaker={(i) => deleteSelectedMaker(i)} />
                 </div>
 
                 <Header title="data"/>

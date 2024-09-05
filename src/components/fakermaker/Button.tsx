@@ -20,8 +20,9 @@ export function Button({title, clicked, showCount}: ButtonProps) {
                 setTimesClicked(timesClicked < 100 ? timesClicked + 1 : timesClicked)
             }}>
             {title}
-            <div
-                className={`absolute ${showCount && timesClicked > 1 ? 'md:group-hover:shadow-[0_0_8px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-subtle_blue transition duration-200 border-2 border-accent_pink w-[26px] h-[26px] leading-[22px] rounded-full bg-dark_blue text-light_blue text-xs text-center -top-3.5 -right-3' : 'invisible'}`}>{timesClicked}</div>
+            <div className={`absolute ${showCount && timesClicked > 1 ? 'md:group-hover:shadow-[0_0_8px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-subtle_blue transition duration-200 border-2 border-accent_pink w-[26px] h-[26px] leading-[22px] rounded-full bg-dark_blue text-light_blue text-xs text-center -top-3.5 -right-3' : 'invisible'}`}>
+                {timesClicked}
+            </div>
         </button>
     )
 }
