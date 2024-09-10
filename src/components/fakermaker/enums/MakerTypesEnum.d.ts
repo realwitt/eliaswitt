@@ -5,8 +5,8 @@ export type MakerTypesEnum =
     'PHONE' |
     'ADDRESS' |
     'ADDRESS_2' |
-    'CITY' |
     'STATE' |
+    'CITY' |
     'ZIP' |
     'PRICE' |
     'DATE' |

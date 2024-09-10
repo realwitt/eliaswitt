@@ -1,18 +1,20 @@
 import {Button} from "./Button.tsx";
-import type {Maker} from "./types/AvailableMakers";
+import type {Maker} from "./types/Maker";
 
 type FakerProps = {
-    availableMakers: Array<Maker>
+    availableMakers: Array<Maker> | undefined
     updatedMakerIndex(index: number): void
 }
 
 
 export function MakersAvailable({availableMakers, updatedMakerIndex} : FakerProps) {
-    const renderedMakers = []
-    for (let i = 0; i < availableMakers?.length; i++) {
-        renderedMakers.push(
-            <Button key={i} title={availableMakers[i].type.toLowerCase()} clicked={() => updatedMakerIndex(i)} showCount={true} />
-        )
+    if (availableMakers) {
+        const renderedMakers = []
+        for (let i = 0; i < availableMakers?.length; i++) {
+            renderedMakers.push(
+                <Button key={i} title={availableMakers[i].type.toLowerCase()} clicked={() => updatedMakerIndex(i)} countToShow={availableMakers[i].count} />
+            )
+        }
+        return renderedMakers
     }
-    return renderedMakers
 }

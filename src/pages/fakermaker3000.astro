@@ -1,16 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import {FakerMaker3000} from "../components/fakermaker/FakerMaker3000";
-import type {AvailableSchemaOptions} from "../components/fakermaker/types/AvailableSchemaOptions";
+import {Schema} from "../components/fakermaker/types/Schema";
 
-const temp: AvailableSchemaOptions = {
+const temp: Schema = {
     "fakers": [
         "Harry Potter",
         "Lord of the Rings",
         "Rick and Morty",
         "Game of Thrones"
     ],
-    "makers": [ // order matters on this
+    "availableMakers": [ // order matters on this
         {"type" : "NAME", "options" : ["first", "last", "company"]},
         {"type" : "EMAIL"},
         {"type" : "PHONE", "options" : ["with country code"]},
@@ -21,10 +21,11 @@ const temp: AvailableSchemaOptions = {
         {"type" : "ZIP"},
         {"type" : "PRICE", "options" : ["start", "end"]},
         {"type" : "DATE", "options" : ["start", "end"]}
-    ]
+    ],
+    "selectedMakers": []
 }
 
-const availableSchemaOptions : AvailableSchemaOptions = temp
+const availableSchemaOptions : Schema = temp
 
 
 ---
@@ -49,7 +50,7 @@ const availableSchemaOptions : AvailableSchemaOptions = temp
 
         </div>
 
-        <FakerMaker3000 client:load availableSchemaOptions={availableSchemaOptions} />
+        <FakerMaker3000 client:load availableSchemaOptionsFromServer={availableSchemaOptions} />
 
     </main>
 </Layout>

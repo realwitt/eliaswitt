@@ -1,5 +1,5 @@
-import type {Maker_Generic} from "./MakerBaseType";
+import type {Maker} from "./Maker";
 
-export interface Maker_Price extends Maker_Generic  {
+export interface Maker_Price extends Maker  {
     range: Array<number, 2>
 }
