@@ -2,10 +2,10 @@ import {Button} from "./Button.tsx";
 
 type FakerProps = {
     availableFakers: Array<string> | undefined
-    updatedFakerIndex(index: number): void
+    toggleFaker(index: number): void
 }
 
-export function Fakers({availableFakers, updatedFakerIndex}: FakerProps) {
+export function Fakers({availableFakers, toggleFaker}: FakerProps) {
     const fakers = []
     if (availableFakers) {
         for (let i = 0; i < availableFakers?.length; i++) {
@@ -16,7 +16,7 @@ export function Fakers({availableFakers, updatedFakerIndex}: FakerProps) {
                         .toLowerCase()
                         .split(' ')
                         .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-                        .join(' ')} clicked={() => updatedFakerIndex(i)}/>
+                        .join(' ')} clicked={() => toggleFaker(i)}/>
             )
         }
         return fakers

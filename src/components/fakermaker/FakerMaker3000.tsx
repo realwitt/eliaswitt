@@ -46,7 +46,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         if (schema.selectedMakers) {
             for (let maker of schema?.selectedMakers) {
                 if (maker.nickName === `${type.toLowerCase()}-${count}`) {
-                    nickNameFinder4000(type, localCount+=1)
+                    nickNameFinder4000(type, localCount += 1)
                 }
             }
         }
@@ -99,81 +99,69 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                         maker
                     ]
                 };
-                console.log("Updated schema in createAndAddSelectedMaker:", newSchema);
                 return newSchema;
             })
-            // setSchema({
-            //     ...schema,
-            //     selectedMakers: [
-            //         ...schema.selectedMakers ?? [],
-            //         maker
-            //     ]
-            // })
-            // console.log("Updated schema in createAndAddSelectedMaker:", newSchema);
         }
     }
 
-    // function incrementAvailableMaker(index: number) {
-    //     if (schema?.availableMakers) {
-    //         if (schema?.availableMakers[index]) {
-    //             const updatedMaker = {
-    //                 ...schema.availableMakers[index],
-    //                 count: (schema.availableMakers[index].count || 0) + 1
-    //             };
-    //
-    //             setSchema({
-    //                 ...schema,
-    //                 availableMakers: [
-    //                     ...schema.availableMakers.slice(0, index),
-    //                     updatedMaker,
-    //                     ...schema.availableMakers.slice(index + 1)
-    //                 ]
-    //             });
-    //         }
-    //     }
-    // }
     function incrementAvailableMaker(index: number) {
         setSchema(prevSchema => {
             if (prevSchema?.availableMakers?.[index]) {
-                const updatedMakers = [...prevSchema.availableMakers];
+                const updatedMakers = [...prevSchema.availableMakers]
                 updatedMakers[index] = {
                     ...updatedMakers[index],
                     count: (updatedMakers[index].count || 0) + 1
-                };
+                }
                 const newSchema = {
                     ...prevSchema,
                     availableMakers: updatedMakers
-                };
-                console.log("Updated schema in incrementAvailableMaker:", newSchema);
-                return newSchema;
+                }
+                return newSchema
             }
-            return prevSchema;
+            return prevSchema
         });
     }
 
     function decrementAvailableMaker(index: number) {
-        if (schema?.availableMakers) {
-            if (schema.availableMakers[index]) {
-                const updatedMaker = {
-                    ...schema.availableMakers[index],
-                    count: (schema.availableMakers[index].count || 0) - 1
-                };
-
-                setSchema({
-                    ...schema,
-                    availableMakers: [
-                        ...schema.availableMakers.slice(0, index),
-                        updatedMaker,
-                        ...schema.availableMakers.slice(index + 1)
-                    ]
-                });
+        // use ID to find the availableMakerType not the index... duh
+        if (schema?.availableMakers && schema?.selectedMakers && schema?.selectedMakers[index]) {
+            for (let i = 0; i < schema.availableMakers.length; i++) {
+                if (schema.availableMakers[i].type === schema.selectedMakers[index].type) {
+                    setSchema(prevSchema => {
+                        const updatedMakers = [...prevSchema.availableMakers || []]
+                        updatedMakers[i] = {
+                            ...updatedMakers[i],
+                            count: (updatedMakers[i].count || 0) - 1
+                        }
+                        const newSchema = {
+                            ...prevSchema,
+                            availableMakers: updatedMakers
+                        }
+                        console.log(newSchema)
+                        return newSchema
+                    })
+                }
             }
         }
     }
 
-    function deleteSelectedMaker(index: number) { if (schema.selectedMakers) {
-            console.log("before: " + schema.selectedMakers)
-            setSchema({...schema, selectedMakers: [...schema.selectedMakers.filter((_, i) => i !== index)]})
+    function deleteSelectedMaker(index: number) {
+        if (schema.selectedMakers) {
+            setSchema(prevSchema => {
+                const currentSelectedMakers = prevSchema.selectedMakers || [];
+                if (prevSchema?.selectedMakers?.[index]) {
+                    const updatedMakers = [
+                        ...currentSelectedMakers.filter((_, i) => i !== index)
+                    ]
+                    const newSchema = {
+                        ...prevSchema,
+                        selectedMakers: updatedMakers
+                    }
+                    return newSchema
+                }
+                return prevSchema
+            })
+
         }
     }
 
@@ -188,9 +176,8 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                 <Header title="available fakers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
                     <Fakers availableFakers={schema?.fakers}
-                            updatedFakerIndex={(i) => {
-                                console.log("faker index: " + i)
-                            }}/>
+                            toggleFaker={(i) => console.log(i)}
+                    />
 
                 </div>
 
