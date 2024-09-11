@@ -1,9 +1,9 @@
 import type {Maker} from "./Maker";
-import type {FakerEnum} from "../enums/FakerNameEnum";
+import type {Faker} from "./Faker";
 
 export type Schema = {
     sessionID?: string
-    fakers?: Array<FakerEnum>
+    fakers?: Array<Faker>
     availableMakers?: Array<Maker> | []
     selectedMakers?: Array<Maker> | []
 }

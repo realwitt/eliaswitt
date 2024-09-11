@@ -5,10 +5,10 @@ import type {Schema} from "../components/fakermaker/types/Schema";
 
 const temp: Schema = {
     "fakers": [
-        "Harry Potter",
-        "Lord of the Rings",
-        "Rick and Morty",
-        "Game of Thrones"
+        {"fakerName": "Harry Potter", "selected": "true"},
+        {"fakerName": "Lord of the Rings"},
+        {"fakerName": "Rick and Morty"},
+        {"fakerName": "Game of Thrones"},
     ],
     "availableMakers": [ // order matters on this
         {"type" : "NAME", "options" : ["first", "last", "company"]},

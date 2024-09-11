@@ -53,6 +53,24 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         return `${type.toLowerCase()}-${localCount}`
     }
 
+    function toggleFaker(index: number) {
+        setSchema(prevSchema => {
+            if (prevSchema?.fakers && prevSchema?.fakers[index]) {
+                const updatedFakers = [...prevSchema.fakers || []]
+                updatedFakers[index] = {
+                    ...updatedFakers[index],
+                    selected: !updatedFakers[index].selected
+                }
+                const newSchema = {
+                    ...prevSchema,
+                    fakers: updatedFakers
+                }
+                return newSchema
+            }
+            return prevSchema
+        })
+    }
+
     function createAndAddSelectedMaker(makerIndex: number) {
         if (schema.availableMakers) {
             const selectedMaker = schema.availableMakers[makerIndex]
@@ -149,7 +167,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         if (schema.selectedMakers) {
             setSchema(prevSchema => {
                 const currentSelectedMakers = prevSchema.selectedMakers || [];
-                if (prevSchema?.selectedMakers?.[index]) {
+                if (prevSchema?.selectedMakers && prevSchema?.selectedMakers[index]) {
                     const updatedMakers = [
                         ...currentSelectedMakers.filter((_, i) => i !== index)
                     ]
@@ -175,8 +193,8 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
 
                 <Header title="available fakers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <Fakers availableFakers={schema?.fakers}
-                            toggleFaker={(i) => console.log(i)}
+                    <Fakers availableFakers={schema?.fakers || []}
+                            toggleFaker={(i) => toggleFaker(i)}
                     />
 
                 </div>
