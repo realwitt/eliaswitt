@@ -42,10 +42,11 @@ import type {Maker} from "./types/Maker";
 
 type ActiveProps = {
     selectedMakers: Array<Maker> | undefined
+    toggleNullable(index: number): void
     deleteSelectedMaker(index: number): void
 }
 
-export function MakersSelected({selectedMakers, deleteSelectedMaker}: ActiveProps) {
+export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNullable}: ActiveProps) {
 
     if (!selectedMakers || selectedMakers.length === 0) {
         return <div></div>;
@@ -55,7 +56,10 @@ export function MakersSelected({selectedMakers, deleteSelectedMaker}: ActiveProp
         <div>
             {selectedMakers.map((maker, index) => (
                 <div key={index}
-                     className="group inline-block cursor-pointer bg-accent_pink border-2 border-transparent active:bg-subtle_blue relative text-sm font-semibold transition duration-150 text-nowrap mr-7 mb-5 px-[18px] pt-1 pb-1 rounded-lg md:hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:hover:shadow-accent_pink">
+                     className="group select-none inline-block cursor-pointer bg-accent_pink border-2 border-transparent active:bg-pink-600 relative text-sm font-semibold transition duration-150 text-nowrap mr-7 mb-5 px-[18px] pt-1 pb-1 rounded-lg rounded-tr-md md:hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:hover:shadow-accent_pink mt-2"
+                     onClick={() => toggleNullable(index)}
+                >
+                    <div className={`absolute -top-5 right-0 text-[10px] ${maker.nullable ? 'text-accent_pink' : 'text-subtle_blue'}`}>nullable</div>
                     {maker.nickName ? maker.nickName.toLowerCase() : maker.type.toLowerCase()}
                     <svg
                         className={'fill-accent_purple bg-dark_blue h-7 w-7 py-1.5 rounded-full -top-2 -left-3.5 absolute border-2 border-accent_pink invisible group-hover:visible transition duration-200 md:hover:shadow-accent_pink md:group-hover:shadow-[0_0_8px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-subtle_blue hover:border-accent_purple ease-in-out hover:scale-110'}

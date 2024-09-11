@@ -65,6 +65,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     ...prevSchema,
                     fakers: updatedFakers
                 }
+                console.log(newSchema)
                 return newSchema
             }
             return prevSchema
@@ -77,7 +78,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
             let maker: Maker_Date | Maker_Price | Maker_Name | Maker = {
                 type: selectedMaker.type,
                 nickName: getUniqueNickName(selectedMaker.type),
-                nullable: true,
+                nullable: false,
                 count: 0,
             }
             switch (selectedMaker.type) {
@@ -110,14 +111,13 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
             }
 
             setSchema(prevSchema => {
-                const newSchema = {
+                return {
                     ...prevSchema,
                     selectedMakers: [
                         ...(prevSchema.selectedMakers ?? []),
                         maker
                     ]
                 };
-                return newSchema;
             })
         }
     }
@@ -130,11 +130,10 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     ...updatedMakers[index],
                     count: (updatedMakers[index].count || 0) + 1
                 }
-                const newSchema = {
+                return {
                     ...prevSchema,
                     availableMakers: updatedMakers
                 }
-                return newSchema
             }
             return prevSchema
         });
@@ -151,12 +150,10 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                             ...updatedMakers[i],
                             count: (updatedMakers[i].count || 0) - 1
                         }
-                        const newSchema = {
+                        return {
                             ...prevSchema,
                             availableMakers: updatedMakers
                         }
-                        console.log(newSchema)
-                        return newSchema
                     })
                 }
             }
@@ -171,15 +168,35 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     const updatedMakers = [
                         ...currentSelectedMakers.filter((_, i) => i !== index)
                     ]
-                    const newSchema = {
+                    return {
                         ...prevSchema,
                         selectedMakers: updatedMakers
                     }
-                    return newSchema
                 }
                 return prevSchema
             })
 
+        }
+    }
+
+    function toggleNullable(index: number) {
+        if (schema.selectedMakers) {
+            setSchema(prevSchema => {
+                if (prevSchema.selectedMakers && prevSchema.selectedMakers[index]) {
+                    const updatedMakers = [
+                        ...prevSchema.selectedMakers,
+                    ]
+                    updatedMakers[index] = {
+                        ...updatedMakers[index],
+                        nullable: !updatedMakers[index].nullable
+                    }
+                    return {
+                        ...prevSchema,
+                        selectedMakers: updatedMakers
+                    }
+                }
+                return prevSchema
+            })
         }
     }
 
@@ -193,27 +210,33 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
 
                 <Header title="available fakers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <Fakers availableFakers={schema?.fakers || []}
-                            toggleFaker={(i) => toggleFaker(i)}
+                    <Fakers
+                        availableFakers={schema?.fakers || []}
+                        toggleFaker={(index) => toggleFaker(index)}
                     />
 
                 </div>
 
                 <Header title="available makers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <MakersAvailable availableMakers={schema?.availableMakers}
-                                     updatedMakerIndex={(index) => {
-                                         createAndAddSelectedMaker(index);
-                                         incrementAvailableMaker(index)
-                                     }}/>
+                    <MakersAvailable
+                        availableMakers={schema?.availableMakers}
+                        updatedMakerIndex={(index) => {
+                            createAndAddSelectedMaker(index);
+                            incrementAvailableMaker(index)
+                        }}/>
                 </div>
 
                 <Header title="selected makers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <MakersSelected selectedMakers={schema?.selectedMakers} deleteSelectedMaker={(i) => {
-                        deleteSelectedMaker(i)
-                        decrementAvailableMaker(i)
-                    }}/>
+                    <MakersSelected
+                        selectedMakers={schema?.selectedMakers}
+                        deleteSelectedMaker={(index) => {
+                            deleteSelectedMaker(index)
+                            decrementAvailableMaker(index)
+                        }}
+                        toggleNullable={(index) => toggleNullable(index)}
+                    />
                 </div>
 
                 <Header title="data"/>
