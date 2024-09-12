@@ -79,7 +79,6 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                 type: selectedMaker.type,
                 nickName: getUniqueNickName(selectedMaker.type),
                 nullable: false,
-                count: 0,
             }
             switch (selectedMaker.type) {
                 case 'NAME':

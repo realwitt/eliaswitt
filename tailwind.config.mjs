@@ -9,6 +9,7 @@ export default {
 				subtle_blue: '#5F70A0',
 				light_blue: '#9FA9C6',
 				accent_pink: '#F75590',
+				accent_pink_light: '#F985AF',
 				accent_purple: '#BDB2FF',
 				line: '#424E70',
 			},

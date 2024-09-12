@@ -20,7 +20,7 @@ export function Button({title, clicked, countToShow}: ButtonProps) {
             className={`group ${(isToggled && countToShow !== 0 || countToShow && countToShow > 0) ? 
                 'bg-accent_pink' : 
                 'bg-accent_purple'} 
-                border-2 border-transparent  active:bg-subtle_blue relative text-sm font-semibold transition duration-150 
+                border-2 border-transparent active:bg-accent_pink_light relative text-sm font-semibold transition duration-150 
                 text-nowrap mr-7 mb-5 px-[18px] pt-0.5 pb-[2.5px] rounded-lg md:hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:hover:shadow-accent_pink`}
             onClick={() => {clicked(); toggleIfNoCount()}}>
             {title}
