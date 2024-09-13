@@ -8,7 +8,6 @@ export function Menu() {
             <div className="hover:cursor-pointer -mt-1 mr-5 pr-10 md:pr-0 md:invisible md:absolute"
                  onClick={() => {
                      setShowMenu(!showMenu);
-                     console.log(showMenu)
                  }}>
                 {/* cheeseburger-seeds */}
                 <svg

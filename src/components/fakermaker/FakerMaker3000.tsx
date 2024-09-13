@@ -199,6 +199,23 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         }
     }
 
+    function nickNameUpdate(newNickName: string, index: number) {
+        setSchema(prevSchema => {
+            if (schema.selectedMakers && schema.selectedMakers[index]) {
+                const updatedMakers = [...schema.selectedMakers]
+                updatedMakers[index] = {
+                    ...updatedMakers[index],
+                    nickName: newNickName
+                }
+                return {
+                    ...prevSchema,
+                    selectedMakers: updatedMakers
+                }
+            }
+            return prevSchema
+        })
+    }
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ return portion ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if (schema) {
         return (
@@ -227,20 +244,19 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                 </div>
 
                 <Header title="selected makers"/>
-                <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    <MakersSelected
-                        selectedMakers={schema?.selectedMakers}
-                        deleteSelectedMaker={(index) => {
-                            deleteSelectedMaker(index)
-                            decrementAvailableMaker(index)
-                        }}
-                        toggleNullable={(index) => toggleNullable(index)}
-                    />
-                </div>
+                <MakersSelected
+                    selectedMakers={schema?.selectedMakers}
+                    deleteSelectedMaker={(index) => {
+                        deleteSelectedMaker(index)
+                        decrementAvailableMaker(index)
+                    }}
+                    toggleNullable={(index) => toggleNullable(index)}
+                    nickNameUpdate={(newString, index) => nickNameUpdate(newString, index)}
+                />
 
                 <Header title="data"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
-                    {/*todo*/}
+                    {/*todo: make data table*/}
                 </div>
 
             </div>
