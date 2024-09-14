@@ -199,18 +199,20 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         }
     }
 
-    function nickNameUpdate(newNickName: string, index: number) {
+    function setNickName(newNickName: string, index: number) {
         setSchema(prevSchema => {
-            if (schema.selectedMakers && schema.selectedMakers[index]) {
+            if (schema.selectedMakers && schema.selectedMakers[index] && newNickName.length < 21) {
                 const updatedMakers = [...schema.selectedMakers]
                 updatedMakers[index] = {
                     ...updatedMakers[index],
                     nickName: newNickName
                 }
-                return {
+                const newSchema = {
                     ...prevSchema,
                     selectedMakers: updatedMakers
                 }
+                console.log(newSchema)
+                return newSchema
             }
             return prevSchema
         })
@@ -251,7 +253,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                         decrementAvailableMaker(index)
                     }}
                     toggleNullable={(index) => toggleNullable(index)}
-                    nickNameUpdate={(newString, index) => nickNameUpdate(newString, index)}
+                    nickNameUpdate={(newString, index) => setNickName(newString, index)}
                 />
 
                 <Header title="data"/>

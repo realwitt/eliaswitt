@@ -89,11 +89,11 @@ const {title} = Astro.props;
     </div>
 
     <div class="flex-1" />
-    <!-- links -->
-    <a class="invisible md:visible absolute md:relative text-subtle_blue mr-5 md:mr-10 mt-auto" href="/portfolio">portfolio</a>
-    <a class="invisible md:visible absolute md:relative text-subtle_blue mt-auto" href="/musings">musings</a>
+    <!-- desktop menu links -->
+    <a class="invisible md:visible absolute md:relative text-subtle_blue mr-5 md:mr-10 mt-auto hover:text-accent_pink transition duration-300" href="/projects">projects</a>
+    <a class="invisible md:visible absolute md:relative text-subtle_blue mt-auto hover:text-accent_pink transition duration-300" href="/musings">musings</a>
 
-    <!-- mobile menu -->
+    <!-- mobile menu links -->
     <Menu client:load />
 </div>
 <!-- line -->
