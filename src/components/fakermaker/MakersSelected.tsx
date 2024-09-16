@@ -3,59 +3,94 @@ import type {Maker_Date} from "./types/MakerDate";
 import type {Maker_Price} from "./types/MakerPrice";
 import type {Maker_Name} from "./types/MakerName";
 import {useState} from "react";
+import type {MakerNameTypeEnum} from "./enums/MakerNameTypeEnum";
 
 type ActiveProps = {
     selectedMakers: Array<Maker> | undefined
     toggleNullable(index: number): void
     deleteSelectedMaker(index: number): void
     nickNameUpdate(update: string, index: number): void
+    nameTypeUpdate(update: MakerNameTypeEnum, index: number): void
 }
 
-export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNullable, nickNameUpdate}: ActiveProps) {
-    const [inputSize, setInputSize] = useState(10)
+export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNullable, nickNameUpdate, nameTypeUpdate}: ActiveProps) {
+    const [inputSize, setInputSize] = useState(12)
     function calculateInputSize(inputValue: string) {
-        if (inputValue.length > 10) {
+        if (inputValue.length > 12) {
             setInputSize(inputValue.length)
         }
-        if (inputValue.length === 0) {
-            setInputSize(10)
+        if (inputValue.length < 12) {
+            setInputSize(12)
         }
     }
 
-    function renderOptions(index: number) {
+    function optionsDialog(index: number) {
         if (selectedMakers && selectedMakers[index]) {
             switch (selectedMakers[index].type) {
                 case 'NAME':
-                    (selectedMakers[index] as Maker_Name).nameType
+                    const nameType = (selectedMakers[index] as Maker_Name).nameType
                     return (
-                        <>
-                            {/*drop down of name types*/}
-                        </>
+                        <div
+                            className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink">
+                            <label className="text-[10px] text-light_blue -mb-0.5 mt-1 " htmlFor="nickName">
+                                nickname
+                            </label>
+                            <input
+                                className={`bg-transparent text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
+                                name="nickname"
+                                id="nickName"
+                                placeholder={`${selectedMakers[index].type.toLowerCase()}...`}
+                                defaultValue={selectedMakers[index].nickName}
+                                size={inputSize}
+                                maxLength={20}
+                                onChange={(e) => {
+                                    nickNameUpdate(e.target.value, index);
+                                    calculateInputSize(e.target.value)
+                                }}
+                            />
+                            <label className="text-[10px] text-light_blue mt-3 -mb-0.5" htmlFor="nickName">
+                                type
+                            </label>
+                            <div className={`${nameType === 'FIRST' ? 'text-accent_pink' : 'text-subtle_blue hover:text-light_blue transition duration-200'} text-sm mt-1 pb-0.5 border-line border-b-2 cursor-pointer`} onClick={nameTypeUpdate('FIRST', index)}>
+                                first
+                            </div >
+                            <div className={`${nameType === 'LAST' ? 'text-accent_pink' : 'text-subtle_blue hover:text-light_blue transition duration-200'} text-sm mt-1 pb-0.5 border-line border-b-2 cursor-pointer`}>
+                                last
+                            </div>
+                            <div className={`${nameType === 'COMPANY' ? 'text-accent_pink' : 'text-subtle_blue hover:text-light_blue transition duration-200'} text-sm mt-1 pb-0.5 cursor-pointer`}>
+                                company
+                            </div>
+                        </div>
                     )
                 case 'PRICE':
                     (selectedMakers[index] as Maker_Price).range
                     return (
                         <>
-                            {/*input for rangeStart*/}
+                        {/*input for rangeStart*/}
                             {/*input for rangeEnd*/}
                         </>
                     )
                 case 'DATE':
                     (selectedMakers[index] as Maker_Date).range
                     return (
-                        <div className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink md:group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-accent_pink">
+                        <div
+                            className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink">
                             {/* input */}
-                            <label className="text-[10px] text-light_blue -mb-0.5 mt-1.5" htmlFor="nickName">
+                            <label className="text-[10px] text-light_blue mt-1.5" htmlFor="nickName">
                                 nickname
                             </label>
                             <input
-                                className={`bg-transparent text-accent_pink border-transparent border-b-subtle_blue focus:border-b-accent_pink border-2 focus:outline-none focus:ring-0 text-sm placeholder:text-subtle_blue`}
+                                className={`bg-transparent text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
                                 name="nickname"
                                 id="nickName"
-                                placeholder={`${selectedMakers[index].type.toLowerCase()} nickname`}
+                                placeholder={`${selectedMakers[index].type.toLowerCase()}...`}
                                 defaultValue={selectedMakers[index].nickName}
-                                size={12}
-                                onChange={(e) => nickNameUpdate(e.target.value, index)}
+                                size={inputSize}
+                                maxLength={20}
+                                onChange={(e) => {
+                                    nickNameUpdate(e.target.value, index);
+                                    calculateInputSize(e.target.value)
+                                }}
                             />
 
                             <label className="text-[10px] text-light_blue mt-3 -mb-0.5" htmlFor="nickName">
@@ -71,12 +106,12 @@ export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNulla
                     )
                 default:
                     return(
-                        <div className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink md:group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-accent_pink">
+                        <div className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink">
                             <label className="text-[10px] text-light_blue -mb-0.5 mt-1 " htmlFor="nickName">
                                 nickname
                             </label>
                             <input
-                                className={`bg-transparent text-accent_pink border-transparent border-b-subtle_blue focus:border-b-accent_pink border-2 focus:outline-none focus:ring-0 text-sm placeholder:text-subtle_blue`}
+                                className={`bg-transparent text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
                                 name="nickname"
                                 id="nickName"
                                 placeholder={`${selectedMakers[index].type.toLowerCase()}...`}
@@ -101,9 +136,9 @@ export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNulla
     return (
         <div className="flex flex-wrap items-start px-5 md:px-10 max-w-[1300px] mx-auto">
             {selectedMakers.map((maker, index) => (
-                    <div className="group">
+                    <div className="group" key={index}>
                         <div key={index}
-                             className="select-none inline-block cursor-pointer bg-accent_pink border-2 border-transparent active:bg-accent_pink_light relative text-sm font-semibold transition duration-150 text-nowrap mr-7 mb-5 px-[18px] pt-1 pb-1 rounded-lg rounded-tr-md group-hover:rounded-b-none md:group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] md:hover:shadow-accent_pink mt-2"
+                             className="select-none inline-block cursor-pointer bg-accent_pink border-2 border-transparent active:bg-accent_pink_light relative text-sm font-semibold text-nowrap mr-7 mb-5 px-[18px] pt-1 pb-1 rounded-lg rounded-tr-md group-hover:rounded-b-none group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink mt-2"
                              onClick={() => {
                                  toggleNullable(index);
                                  console.log(maker)
@@ -115,7 +150,7 @@ export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNulla
                             </div>
                             {maker.nickName ? maker.nickName.toLowerCase() : maker.type.toLowerCase()}
                             <svg
-                                className={'fill-accent_purple bg-dark_blue h-7 w-7 py-1.5 rounded-full -top-2 -left-3.5 absolute border-2 border-accent_pink invisible group-hover:visible transition duration-200 md:hover:shadow-accent_pink md:group-hover:shadow-[0_0_8px_0_rgba(0,0,0,0.3)] md:group-hover:shadow-subtle_blue hover:border-accent_purple ease-in-out hover:scale-110'}
+                                className={'fill-accent_purple bg-dark_blue h-7 w-7 py-1.5 rounded-full -top-2 -left-3.5 absolute border-2 border-accent_pink invisible group-hover:visible transition duration-200 md:hover:shadow-accent_pink group-hover:shadow-[0_0_8px_0_rgba(0,0,0,0.3)] group-hover:shadow-subtle_blue hover:border-accent_purple ease-in-out hover:scale-110'}
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 448 512"
                                 onClick={() => deleteSelectedMaker(index)}
@@ -125,7 +160,7 @@ export function MakersSelected({selectedMakers, deleteSelectedMaker, toggleNulla
                             </svg>
                         </div>
                         <div className="invisible absolute group-hover:visible -top-[26px] left-5 group-hover:relative z-50">
-                            {renderOptions(index)}
+                            {optionsDialog(index)}
                         </div>
                     </div>
                 )

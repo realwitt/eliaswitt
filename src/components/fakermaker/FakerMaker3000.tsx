@@ -9,6 +9,7 @@ import type {Maker_Date} from "./types/MakerDate"
 import type {MakerTypesEnum} from "./enums/MakerTypesEnum";
 import {MakersSelected} from "./MakersSelected.tsx";
 import type {Maker} from "./types/Maker";
+import {Session} from "./Session.tsx";
 
 
 // set default begin date to 100 years ago
@@ -224,7 +225,9 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
             <div className="w-full mt-5 mb-14 max-w-[1440px] mx-auto">
 
                 <Header title="save or restore session"/>
-                {/* todo */}
+                <Session uuid={schema?.sessionID ?? ''} uuidUpdate={(value) =>
+                    setSchema({...schema, sessionID: value})
+                }/>
 
                 <Header title="available fakers"/>
                 <div className="px-5 md:px-10 max-w-[1300px] mx-auto">
