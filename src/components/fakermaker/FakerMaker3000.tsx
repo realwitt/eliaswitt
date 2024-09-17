@@ -222,7 +222,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                 const updatedMakers = [...schema.selectedMakers]
                 updatedMakers[index] = {
                     ...updatedMakers[index],
-                    nameType: nameType
+                    nameType: nameType.toUpperCase()
                 }
                 return {
                     ...schema,

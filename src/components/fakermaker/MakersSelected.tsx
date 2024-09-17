@@ -58,9 +58,9 @@ export function MakersSelected({
                             <label className="text-[10px] text-light_blue mt-3 -mb-0.5" htmlFor="nickName">
                                 type
                             </label>
-
                             {arrayOfNameTypes.map((name, k) => (
-                                <div className={`flex justify-between group/nameType cursor-pointer ${k === arrayOfNameTypes.length - 1 ? '' : 'border-line border-b-2'}`} key={k}
+                                // fix weird floating checkmark with 'hidden'
+                                <div className={`hidden group-hover:flex justify-between group/nameType cursor-pointer ${k === arrayOfNameTypes.length - 1 ? '' : 'border-line border-b-2'}`} key={k}
                                      onClick={() => nameTypeUpdate(name as MakerNameTypeEnum, index)}>
                                     <div
                                         className={`${currentMakerNameType === name ? 'text-accent_pink' : 'text-subtle_blue group-hover/nameType:text-light_blue'} text-sm mt-1 pb-0.5`}>
