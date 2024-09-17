@@ -10,6 +10,7 @@ import type {MakerTypesEnum} from "./enums/MakerTypesEnum";
 import {MakersSelected} from "./MakersSelected.tsx";
 import type {Maker} from "./types/Maker";
 import {Session} from "./Session.tsx";
+import type {MakerNameTypeEnum} from "./enums/MakerNameTypeEnum";
 
 
 // set default begin date to 100 years ago
@@ -62,12 +63,10 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     ...updatedFakers[index],
                     selected: !updatedFakers[index].selected
                 }
-                const newSchema = {
+                return {
                     ...prevSchema,
                     fakers: updatedFakers
                 }
-                console.log(newSchema)
-                return newSchema
             }
             return prevSchema
         })
@@ -208,12 +207,27 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     ...updatedMakers[index],
                     nickName: newNickName
                 }
-                const newSchema = {
+                return {
                     ...prevSchema,
                     selectedMakers: updatedMakers
                 }
-                console.log(newSchema)
-                return newSchema
+            }
+            return prevSchema
+        })
+    }
+
+    function setNameType(nameType: MakerNameTypeEnum, index: number) {
+        setSchema(prevSchema => {
+            if (schema.selectedMakers && schema.selectedMakers[index] && (schema.selectedMakers[index] as Maker_Name).nameType !== nameType) {
+                const updatedMakers = [...schema.selectedMakers]
+                updatedMakers[index] = {
+                    ...updatedMakers[index],
+                    nameType: nameType
+                }
+                return {
+                    ...schema,
+                    selectedMakers: updatedMakers
+                }
             }
             return prevSchema
         })
@@ -235,7 +249,6 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                         availableFakers={schema?.fakers || []}
                         toggleFaker={(index) => toggleFaker(index)}
                     />
-
                 </div>
 
                 <Header title="available makers"/>
@@ -257,6 +270,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     }}
                     toggleNullable={(index) => toggleNullable(index)}
                     nickNameUpdate={(newString, index) => setNickName(newString, index)}
+                    nameTypeUpdate={(nameType, index) => setNameType(nameType, index)}
                 />
 
                 <Header title="data"/>
