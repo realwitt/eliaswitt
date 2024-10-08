@@ -4,7 +4,7 @@ import {MakersAvailable} from "./MakersAvailable.tsx"
 import type {Schema} from "./types/Schema"
 import {useState} from "react"
 import type {Maker_Name} from "./types/MakerName"
-import type {Maker_Price} from "./types/MakerPrice"
+import type {Maker_Number} from "./types/MakerNumber"
 import type {Maker_Date} from "./types/MakerDate"
 import type {MakerTypesEnum} from "./enums/MakerTypesEnum";
 import {MakersSelected} from "./MakersSelected.tsx";
@@ -75,7 +75,7 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
     function createAndAddSelectedMaker(makerIndex: number) {
         if (schema.availableMakers) {
             const selectedMaker = schema.availableMakers[makerIndex]
-            let maker: Maker_Date | Maker_Price | Maker_Name | Maker = {
+            let maker: Maker_Date | Maker_Number | Maker_Name | Maker = {
                 type: selectedMaker.type,
                 nickName: getUniqueNickName(selectedMaker.type),
                 nullable: false,
@@ -233,6 +233,24 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
         })
     }
 
+    function setNumberRange(num: string, index: number, arrayIndex: number) {
+        setSchema(prevSchema => {
+            if (schema.selectedMakers && schema.selectedMakers[index]) {
+                const updatedMakers = [...schema.selectedMakers]
+                const currentMaker = (updatedMakers[index] as Maker_Number)
+                currentMaker.range = arrayIndex === 0 ? [num, currentMaker.range[1]] : [currentMaker.range[0], num]
+                updatedMakers[index] = currentMaker
+                const newSchema = {
+                    ...schema,
+                    selectedMakers: updatedMakers
+                }
+                console.log(newSchema)
+                return newSchema
+            }
+            return prevSchema
+        })
+    }
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ return portion ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if (schema) {
         return (
@@ -271,6 +289,8 @@ export function FakerMaker3000({availableSchemaOptionsFromServer}: FakerMaker300
                     toggleNullable={(index) => toggleNullable(index)}
                     nickNameUpdate={(newString, index) => setNickName(newString, index)}
                     nameTypeUpdate={(nameType, index) => setNameType(nameType, index)}
+                    numberRangeStartUpdate={(num, index) => setNumberRange(num, index, 0)}
+                    numberRangeEndUpdate={(num, index) => setNumberRange(num, index, 1)}
                 />
 
                 <Header title="data"/>

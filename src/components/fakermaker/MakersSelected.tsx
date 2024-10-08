@@ -1,6 +1,6 @@
 import type {Maker} from "./types/Maker";
 import type {Maker_Date} from "./types/MakerDate";
-import type {Maker_Price} from "./types/MakerPrice";
+import type {Maker_Number} from "./types/MakerNumber";
 import type {Maker_Name} from "./types/MakerName";
 import {useState} from "react";
 import type {MakerNameTypeEnum} from "./enums/MakerNameTypeEnum";
@@ -11,6 +11,8 @@ type ActiveProps = {
     deleteSelectedMaker(index: number): void
     nickNameUpdate(update: string, index: number): void
     nameTypeUpdate(update: MakerNameTypeEnum, index: number): void
+    numberRangeStartUpdate(update: string, index: number): void
+    numberRangeEndUpdate(update: string, index: number): void
 }
 
 export function MakersSelected({
@@ -18,7 +20,9 @@ export function MakersSelected({
                                    deleteSelectedMaker,
                                    toggleNullable,
                                    nickNameUpdate,
-                                   nameTypeUpdate
+                                   nameTypeUpdate,
+                                   numberRangeStartUpdate,
+                                   numberRangeEndUpdate,
                                }: ActiveProps) {
     const [inputSize, setInputSize] = useState(12)
 
@@ -30,9 +34,21 @@ export function MakersSelected({
         }
     }
 
+    function onlyHasOnePeriod(incomingCharacter: string, existingString: string) {
+        console.log('incoming caracter is:')
+        console.log(incomingCharacter.charCodeAt(0))
+        console.log(typeof incomingCharacter)
+        if (incomingCharacter === '.') {
+            console.log('existing string has a period:')
+            console.log(existingString.includes('.'))
+        }
+        return true
+    }
+
     function optionsDialog(index: number) {
         if (selectedMakers && selectedMakers[index]) {
             switch (selectedMakers[index].type) {
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NAME ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 case 'NAME':
                     const currentMakerNameType = (selectedMakers[index] as Maker_Name).nameType
                     const arrayOfNameTypes = ['FIRST', 'LAST', 'COMPANY']
@@ -60,8 +76,10 @@ export function MakersSelected({
                             </label>
                             {arrayOfNameTypes.map((name, k) => (
                                 // fix weird floating checkmark with 'hidden'
-                                <div className={`hidden group-hover:flex justify-between group/nameType cursor-pointer ${k === arrayOfNameTypes.length - 1 ? '' : 'border-line border-b-2'}`} key={k}
-                                     onClick={() => nameTypeUpdate(name as MakerNameTypeEnum, index)}>
+                                <div
+                                    className={`hidden group-hover:flex justify-between group/nameType cursor-pointer ${k === arrayOfNameTypes.length - 1 ? '' : 'border-line border-b-2'}`}
+                                    key={k}
+                                    onClick={() => nameTypeUpdate(name as MakerNameTypeEnum, index)}>
                                     <div
                                         className={`${currentMakerNameType === name ? 'text-accent_pink' : 'text-subtle_blue group-hover/nameType:text-light_blue'} text-sm mt-1 pb-0.5`}>
                                         {name.toLowerCase()}
@@ -79,14 +97,81 @@ export function MakersSelected({
 
                         </div>
                     )
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PRICE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 case 'PRICE':
-                    (selectedMakers[index] as Maker_Price).range
+                    (selectedMakers[index] as Maker_Number).range
+                    const currentMaker = (selectedMakers[index] as Maker_Number)
                     return (
-                        <>
-                            {/*input for rangeStart*/}
-                            {/*input for rangeEnd*/}
-                        </>
+                        <div
+                            className="absolute flex flex-col -left-5 px-[18px] bg-dark_blue pt-0.5 pb-3.5 mt-[6px] rounded-b-lg rounded-tr-md border-2 border-accent_pink group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink">
+                            {/* input */}
+                            <label className="text-[10px] text-light_blue mt-1.5" htmlFor="nickName">
+                                nickname
+                            </label>
+                            <input
+                                className={`bg-transparent mt-1 text-sm text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
+                                name="nickname"
+                                id="nickName"
+                                placeholder={`${selectedMakers[index].type.toLowerCase()}...`}
+                                defaultValue={selectedMakers[index].nickName}
+                                size={inputSize}
+                                maxLength={20}
+                                onChange={(e) => {
+                                    nickNameUpdate(e.target.value, index);
+                                    calculateInputSize(e.target.value)
+                                }}
+                            />
+
+                            <label className="text-[10px] text-light_blue mt-3 -mb-0.5" htmlFor="start">
+                                from
+                            </label>
+                            <input
+                                className={`bg-transparent mt-1 text-sm text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
+                                name="start"
+                                id="start"
+                                placeholder="0.00"
+                                defaultValue={(selectedMakers[index] as Maker_Number).range[0]}
+                                size={inputSize}
+                                maxLength={9}
+                                onKeyDown={(e) => {
+                                    const re = /^[0-9\b]+$/
+                                    console.log(e.key)
+                                    if (!/[0-9]/.test(e.key)
+                                        && e.key !== 'Backspace'
+                                        && e.key !== 'ArrowLeft'
+                                        && e.key !== 'ArrowRight'
+                                        && e.key !== 'Meta'
+                                        && e.key !== '.'
+                                        && onlyHasOnePeriod(e.key, (selectedMakers[index] as Maker_Number).range[0])) {
+                                        e.preventDefault()
+                                    }
+                                }}
+                                onChange={(e) => {
+                                    numberRangeStartUpdate(e.target.value, index);
+                                    calculateInputSize(e.target.value)
+                                }}
+                            />
+
+                            <label className="text-[10px] text-light_blue mt-2.5 -mb-0.5 " htmlFor="nickName">
+                                to
+                            </label>
+                            {/*todo: figure out how to prevent non-numbers from being entered*/}
+                            <input
+                                className={`bg-transparent mt-1 text-sm text-accent_pink border-0 border-b-2 border-subtle_blue focus:border-accent_pink focus:outline-none focus:ring-0 placeholder:text-subtle_blue`}
+                                name="start"
+                                id="start"
+                                placeholder="0.00"
+                                defaultValue={(selectedMakers[index] as Maker_Number).range[1]}
+                                size={inputSize}
+                                maxLength={20}
+                                onChange={(e) => {
+                                    numberRangeEndUpdate((/^\d+$/.test(e.target.value) ? e.target.value : ''), index);
+                                    calculateInputSize(e.target.value)
+                                }}
+                            />
+                        </div>
                     )
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DATE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 case 'DATE':
                     (selectedMakers[index] as Maker_Date).range
                     return (
@@ -121,6 +206,7 @@ export function MakersSelected({
                             <div className="text-accent_pink">JAN-01-2024</div>
                         </div>
                     )
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GENERIC ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 default:
                     return (
                         <div
@@ -159,7 +245,6 @@ export function MakersSelected({
                              className="select-none inline-block cursor-pointer bg-accent_pink border-2 border-transparent active:bg-accent_pink_light relative text-sm font-semibold text-nowrap mr-7 mb-5 px-[18px] pt-1 pb-1 rounded-lg rounded-tr-md group-hover:rounded-b-none group-hover:shadow-[0_0_12px_0_rgba(0,0,0,0.3)] group-hover:shadow-accent_pink mt-2"
                              onClick={() => {
                                  toggleNullable(index);
-                                 console.log(maker)
                              }}
                         >
                             <div
