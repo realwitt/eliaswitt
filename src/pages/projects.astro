@@ -8,18 +8,17 @@ import Layout from '../layouts/Layout.astro';
             <h1 class="text-light_blue text-3xl md:text-4xl font-bold">
                 projects
             </h1>
-            <h5 class="text-light_blue text-sm md:text-xs mt-4 md:mt-3">some of the things I've made and lessons I've learned</h5>
         </div>
 
         <!-- header -->
-        <div class="flex flex-row max-w-[1440px] mt-16 md:mt-20 mx-auto">
+        <div class="flex flex-row max-w-[1240px] mt-16 mx-auto">
             <div class="grow h-0.5 bg-line mt-4"/>
             <div class="flex-none flex flex-row justify-start w-full max-w-[1300px]">
                 <div class="min-w-3 md:w-7 h-0.5 bg-line mt-4" />
                 <a class="flex-none flex flex-row group pr-2 md:pr-3 h-full pt-[3px] text-lg md:text-base text-accent_purple font-black md:font-bold rounded-r-md pl-1 md:pl-2"
                    href="https://github.com/realwitt/fakermaker" target="_blank">
                     <h3 class="group-hover:text-accent_pink transition duration-500">
-                        fakerMaker3000
+                        fakermaker
                     </h3>
                     <svg class="fill-accent_purple group-hover:fill-accent_pink transition duration-500 w-6 h-6 md:w-5 md:h-5 ml-3 md:ml-3 mt-[1px]" xmlns="http://www.w3.org/2000/svg" width="98" height="96" viewBox="0 0 98 96">
                         <path class="cls-1"
@@ -27,40 +26,73 @@ import Layout from '../layouts/Layout.astro';
                     </svg>
                 </a>
                 <div class="flex-1 bg-line h-0.5 mt-4 min-w-[25px] max-w-[50px]" />
-                <a class="group hover:border-accent_pink transition duration-500 text-accent_purple text-sm bg-dark_blue md:text-xs mt-0.5 font-black md:font-bold text-nowrap border py-1 px-1.5 mx-1.5 rounded border-accent_purple stroke-accent_purpleA" href="/fakermaker3000">
-                    <h4 class="group-hover:text-accent_pink transition duration-500">try me |></h4>
+                <a class="group hover:border-accent_pink transition duration-500 text-accent_purple text-sm bg-dark_blue md:text-x mt-0.5 font-black md:font-bold text-nowrap border py-1 px-1.5 mx-1.5 rounded border-accent_purple stroke-accent_purpleA" target="_blank" href="https://fakermaker.fm">
+                    <h4 class="group-hover:text-accent_pink transition duration-500">visit fakermaker.fm |></h4>
                 </a>
                 <div class="grow bg-line h-0.5 mt-4 w-full max-w-[300px]" />
             </div>
         </div>
 
         <div class="max-w-[1300px] px-5 md:px-10 mx-auto mt-6 md:mt-4">
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-5">about</h3>
-            <p class="text-sm md:text-xs text-light_blue max-w-[700px]">The fakerMaker3000 allows you to create a csv of fake data using the Java datafaker library, and you can save your schema using a UUID so you can come back and modify it later.</p>
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-8">overview</h3>
+            <p class="text-sm md:text-x text-light_blue max-w-[700px]">Fakermaker allows you to use pop culture references from movies and tv shows to download realistic fake data in CSV format.</p>
 
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-5">stack</h3>
-            <ul role="list" class="text-sm md:text-xs marker:text-light_blue list-disc pl-5 md:pl-3.5 text-light_blue">
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-8">stack</h3>
+            <ul role="list" class="text-sm md:text-x marker:text-light_blue list-disc pl-5 md:pl-3.5 text-light_blue">
                 <li>Kotlin, Spring</li>
-                <li>Astro, React, TypeScript, tailwindcss</li>
-                <li>nginx</li>
-                <li>docker</li>
-                <li>postgres</li>
+                <li>Astro, Vue, TypeScript, tailwindcss</li>
+                <li>Cloudflare</li>
+                <li>Docker</li>
+                <li>Raspberry Pi 5</li>
             </ul>
 
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-5">motivation</h3>
-            <p class="text-sm md:text-xs text-light_blue max-w-[700px]">After having to create a CSV for an internal app at work and trying to test it, I realized making test data by hand was an absolute pain (only setting the entity fields you’re testing). To mitigate this I spent two days at work making generators that used valid business logic for the two db entities I was working with so I could easily create 100 employers with 1000 employees each. It made testing things way easier and I thought it would be fun to expand on that.</p>
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-8">motivation</h3>
+            <p class="text-sm md:text-x text-light_blue max-w-[700px]">I liked making fake data at work for testing our Spring Boot models and thought this would be a fun project to make a portfolio piece.</p>
 
-            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-5">things learned</h3>
-            <p class="text-sm md:text-xs text-light_blue max-w-[700px]">This app had a lot of firsts for me:</p>
-            <ul role="list" class="text-sm md:text-xs marker:text-light_blue list-disc pl-5 md:pl-3.5 text-light_blue">
-                <li>setting up a data structure for a payload that can change in every request (the fakermaker schema)</li>
-                <li>deserializing a payload that can change in every request</li>
-                <li>not having nulls in your DTO constructors (Kotlin sort of forces you to define defaults)</li>
-                <li>deploying a front and back end</li>
-                <li>creating my own dockerfile</li>
-                <li>setting up nginx for routing backend requests</li>
-                <li>filtering traffic to my Digital Ocean droplet using a Cloudflare proxy (bot traffic mitigation)</li>
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-8">things learned</h3>
+            <ul role="list" class="text-sm md:text-s marker:text-light_blue list-disc pl-5 md:pl-3.5 text-light_blue max-w-[800px]">
+                <li class="mb-4">My first iteration of the server had issues with the heap not clearing
+                    memory correctly after API calls got made, so I had to do some profiling and optimizing. I ended up multithreading the app using Kotlin coroutines
+                    and caching the address and location data, which were expensive operations. The server really took off in speed after that, it was crazy.</li>
+                <li class="mb-4">Getting the server to accept the payload was originally tricky, since the payload can change on every request, but after making custom serializers
+                    for my data shapes, I was able to parse everything without a problem.
+                </li>
+                <li class="mb-4">Kotlin really forces you to handle nulls. Coming from the Java world, I wasn't used to that. I've really come to love how Kotlin forces you
+                    to be null safe in making things. Data classes are super nice.
+                </li>
+                <li class="mb-4">For deployment, I knew the JVM is hungry but didn't realize just how hungry. The base tier droplet with 1vCPU and 512mb RAM was laughable, and it seemed like overkill paying $20 for 2vCPUs and 4gb of RAM for an app
+                    no one would use. I decided to self host it on a Raspberry Pi 5 I had laying around, but I didn't feel super secure about this so I went and bought a $500 Dream Machine Pro... after this new toy arrived I was able to isolate the Pi to its own VLAN.
+                </li>
+                <li class="mb-4">I realized I could use Cloudflare tunnels for free and not expose my personal IP, and it was less for me to worry about. After battling a dumb CORS error for many hours and fixing one line of code, I finally got it all working.</li>
+                <li class="mb-4">The frontend was fun, but I quickly learned React has better TypeScript support than Vue. Setting up Tanstack to work with Vue was kinda annoying and for future projects I'm definitely sticking to React.</li>
+                <li class="mb-4">I FINISHED A PROJECT. I have a terrible habit of starting stuff but never finishing it, so this felt really good (mostly) finishing this project. There's still lots I would change,
+                    but I wanted to get back to working on my big side project, plaza.dev.
+                </li>
             </ul>
+
+            <h3 class="text-base md:text-sm font-black md:font-semibold text-subtle_blue mt-7 md:mt-8">regrets</h3>
+            <p class="text-sm md:text-x text-light_blue max-w-[700px]">Grug have many regrets. Should have used React. Should have used Go.</p>
+
+
+            <div class="flex flex-row max-w-[1240px] mt-16 mx-auto">
+                <div class="grow h-0.5 bg-[#32CD4C] mt-4"/>
+                <div class="flex-none flex flex-row justify-start w-full max-w-[1300px]">
+                    <div class="min-w-3 md:w-7 h-0.5 bg-[#32CD4C]  mt-4" />
+                    <div class="flex-none flex flex-row group pr-2 md:pr-3 h-full pt-[3px] text-lg md:text-base text-white font-black md:font-bold rounded-r-md pl-1 md:pl-2" >
+                        <h3 class="group-hover:text-accent_pink transition duration-500">
+                            Plaza
+                        </h3>
+                    </div>
+                    <div class="flex-1 bg-[#32CD4C] h-0.5 mt-4 min-w-[25px] max-w-[50px]" />
+                    <a class="group hover:border-accent_pink transition duration-500 text-white text-sm bg-dark_blue md:text-x mt-0.5 font-black md:font-bold text-nowrap border py-1 px-1.5 mx-1.5 rounded border-[#32CD4C] stroke-accent_purpleA" target="_blank" href="https://plaza.dev">
+                        <h4 class="group-hover:text-accent_pink transition duration-500">check it out |></h4>
+                    </a>
+                    <div class="grow bg-[#32CD4C] h-0.5 mt-4 w-full max-w-[300px]" />
+                </div>
+            </div>
+
+            <p class="text-sm md:text-x text-white max-w-[700px] mt-5">Blazingly fast, beautifully designed. Check it out!</p>
+
         </div>
 
     </main>
