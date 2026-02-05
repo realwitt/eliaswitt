@@ -1,374 +1,414 @@
-# AI Platform Self-Hosting Analysis
+# AI Platform Architecture — Pragmatic Approach
 
-## Hardware Specifications (Corrected)
+## Hardware Context
 
-| Component | Spec | AI Relevance |
-|-----------|------|--------------|
-| **GPU** | NVIDIA 2080 Ti | 11GB VRAM, ~13.4 TFLOPS FP32, Tensor cores |
-| **RAM** | 64GB DDR4 | Can load large models, but CPU is bottleneck |
-| **CPU** | AMD Ryzen 5 (8-core) | Limited parallelization for CPU inference |
+| Component | Spec | Role in This Architecture |
+|-----------|------|---------------------------|
+| **GPU** | NVIDIA 2080 Ti (11GB) | Embeddings only (overkill, but free) |
+| **RAM** | 64GB DDR4 | Host the application |
+| **CPU** | AMD Ryzen 5 (8-core) | Run the platform, embeddings |
 
----
-
-## The Reality Check
-
-**With 8 cores, the GPU is your only viable inference engine for acceptable speeds.**
-
-CPU inference scales roughly linearly with core count. Here's what that means:
-
-| Model | 58-core Speed | 8-core Speed | Verdict |
-|-------|---------------|--------------|---------|
-| 70B Q4 | 6-10 tok/s | **0.8-1.4 tok/s** | Unusable (45-75s per response) |
-| 32B Q4 | 12-18 tok/s | **1.6-2.5 tok/s** | Painful (25-40s per response) |
-| 14B Q4 | 20-30 tok/s | **2.7-4 tok/s** | Marginal (15-25s per response) |
-
-**Bottom line:** Forget CPU-only inference for anything over 8B parameters.
+**Decision: Cloud-only for LLM inference. Local embeddings only.**
 
 ---
 
-## Revised Model Options
+## Why Cloud-Only for AI
 
-### Your Sweet Spot: GPU-Only (11GB VRAM)
+| Factor | Local 8B | Cloud API | Winner |
+|--------|----------|-----------|--------|
+| Quality | Good | Excellent | Cloud |
+| Speed | 2-4s | 1-2s | Cloud |
+| Maintenance | You manage it | Zero | Cloud |
+| Reliability | Your uptime | 99.9% SLA | Cloud |
+| Monthly cost | $15-25 | $40-80 | Local (but...) |
+| **Complexity** | Medium | None | Cloud |
 
-| Model | Quantization | VRAM | Speed | Quality | Use Case |
-|-------|--------------|------|-------|---------|----------|
-| **Llama 3.1 8B** | Q4_K_M | ~5GB | 45-60 tok/s | Good | General queries |
-| **Llama 3.1 8B** | Q5_K_M | ~6GB | 40-50 tok/s | Better | **Recommended** |
-| **Llama 3.1 8B** | Q8_0 | ~9GB | 30-40 tok/s | Best 8B | Quality priority |
-| **Mistral 7B v0.3** | Q5_K_M | ~5GB | 50-65 tok/s | Good | Fast responses |
-| **Qwen2.5 7B** | Q5_K_M | ~5GB | 50-65 tok/s | Good | Good at structured |
-| **Phi-3 Medium 14B** | Q4_K_M | ~8.5GB | 25-35 tok/s | Very Good | Smarter, slower |
-
-### Hybrid GPU+CPU (Marginal Gains)
-
-With only 8 cores, hybrid offloading helps less than you'd hope:
-
-| Model | Config | Speed | Worth It? |
-|-------|--------|-------|-----------|
-| **Qwen2.5 14B** | 28 layers GPU, rest CPU | 12-18 tok/s | Maybe |
-| **Llama 3.1 70B** | 15 layers GPU, rest CPU | 2-4 tok/s | No |
-| **Mixtral 8x7B** | Partial GPU | 4-8 tok/s | Borderline |
-
-**Verdict:** Stick to models that fit entirely on GPU unless you can tolerate 10-20+ second responses.
+**For a $400-5000/month platform, saving $20-40/month isn't worth the operational overhead.**
 
 ---
 
-## Revised Architecture
+## Final Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Franklin AI Platform                          │
-│                    (8-core optimized)                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌─────────────────────────────┐    ┌──────────────────────────┐│
-│  │      Primary Model          │    │     Cloud Fallback       ││
-│  │      (GPU-bound)            │    │    (Complex queries)     ││
-│  │                             │    │                          ││
-│  │   Llama 3.1 8B Q5_K_M       │    │   Claude 3.5 Haiku or    ││
-│  │   or Phi-3 Medium 14B       │    │   GPT-4o-mini            ││
-│  │                             │    │                          ││
-│  │   Handles:                  │    │   Handles:               ││
-│  │   • Inventory lookups       │    │   • Lead analysis        ││
-│  │   • Simple Q&A              │    │   • Complex estimation   ││
-│  │   • Transaction queries     │    │   • Market intelligence  ││
-│  │   • Invoice formatting      │    │   • Multi-step reasoning ││
-│  │   • Basic forecasting       │    │                          ││
-│  │                             │    │                          ││
-│  │   ~85% of queries           │    │   ~15% of queries        ││
-│  │   FREE                      │    │   ~$0.01-0.05/query      ││
-│  └──────────────┬──────────────┘    └────────────┬─────────────┘│
-│                 │                                 │              │
-│                 └─────────────┬──────────────────┘              │
-│                               │                                  │
-│                 ┌─────────────▼─────────────┐                   │
-│                 │     Smart Router          │                   │
-│                 │  (Classify → Route)       │                   │
-│                 └─────────────┬─────────────┘                   │
-│                               │                                  │
-│                 ┌─────────────▼─────────────┐                   │
-│                 │   Franklin Application    │                   │
-│                 └───────────────────────────┘                   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    Franklin AI Platform                           │
+│                    (Pragmatic Architecture)                       │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│   YOUR HARDWARE (Local)                                           │
+│   ┌─────────────────────────────────────────────────────────┐    │
+│   │                                                          │    │
+│   │   Franklin Application                                   │    │
+│   │   ├── React + TanStack (frontend)                       │    │
+│   │   ├── SQLite via sql.js (database)                      │    │
+│   │   └── Runs in browser, no server needed                 │    │
+│   │                                                          │    │
+│   │   Local Embeddings (optional)                            │    │
+│   │   ├── Ollama + nomic-embed-text                         │    │
+│   │   ├── 300MB model, instant responses                    │    │
+│   │   └── Powers semantic search                            │    │
+│   │                                                          │    │
+│   └─────────────────────────────────────────────────────────┘    │
+│                              │                                    │
+│                              │ API calls                          │
+│                              ▼                                    │
+│   CLOUD (Anthropic API)                                           │
+│   ┌─────────────────────────────────────────────────────────┐    │
+│   │                                                          │    │
+│   │   Claude 3.5 Haiku ($0.25/1M input, $1.25/1M output)    │    │
+│   │   ├── Inventory questions                                │    │
+│   │   ├── Lead analysis                                      │    │
+│   │   ├── Job estimation                                     │    │
+│   │   ├── Market intelligence                                │    │
+│   │   ├── Invoice text generation                            │    │
+│   │   └── All conversational AI                              │    │
+│   │                                                          │    │
+│   │   Claude 3.5 Sonnet (if needed for complex reasoning)   │    │
+│   │   └── Fallback for nuanced analysis                      │    │
+│   │                                                          │    │
+│   └─────────────────────────────────────────────────────────┘    │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## What Can an 8B Model Actually Do?
+## Cost Breakdown
 
-**Good at (handle locally):**
-- "Who took the last W8 beam?" → Direct DB query, format answer
-- "What's in stock for channel steel?" → Filter and list
-- "How many items are below minimum?" → Aggregation query
-- "Write an invoice note about price increase" → Template generation
-- "Summarize today's transactions" → Data formatting
-- "What did we use on the Henderson job?" → Lookup and format
+### AI Costs (Cloud)
 
-**Struggles with (send to cloud):**
-- "Analyze this lead and estimate if the job is worth taking" → Multi-factor reasoning
-- "Based on market trends, should we stock up on plate steel?" → Complex analysis
-- "What would this job cost if steel goes up 15% and we use supplier B?" → Multi-variable calculation
-- "Research this company and estimate their project scope" → Web search + reasoning
+| Usage Level | Queries/Month | Avg Tokens/Query | Monthly Cost |
+|-------------|---------------|------------------|--------------|
+| Light | 500 | 1,000 | ~$15-25 |
+| Medium | 2,000 | 1,000 | ~$40-60 |
+| Heavy | 5,000 | 1,500 | ~$80-120 |
 
-**The 8B model is actually fine for 80-90% of Franklin's daily queries** — most are lookups, not analysis.
+**Estimate for Franklin (small shop, 3-5 users):** $40-80/month
+
+### What You're NOT Paying For
+
+| Item | Cloud Cost | Your Cost |
+|------|------------|-----------|
+| Hosting (Vercel, Railway, etc.) | $20-50/month | $0 (runs locally) |
+| Database (Supabase, PlanetScale) | $25-50/month | $0 (SQLite local) |
+| Embeddings API | $10-20/month | $0 (local Ollama) |
+
+**Net savings from local hosting: ~$55-120/month**
+
+### Total Monthly Cost
+
+```
+AI (Claude API):        $40-80
+Hosting:                $0 (local)
+Database:               $0 (SQLite)
+Embeddings:             $0 (local)
+───────────────────────────────
+Total:                  $40-80/month
+```
+
+Compare to fully cloud-hosted: $100-200/month
 
 ---
 
-## Revised Feature Mapping
+## Implementation
 
-| Feature | Where to Run | Why |
-|---------|--------------|-----|
-| **Inventory questions** | Local 8B | Simple lookups |
-| **Transaction history** | Local 8B | Data formatting |
-| **Invoice text generation** | Local 8B | Template-based |
-| **Stock alerts summary** | Local 8B | Aggregation |
-| **Basic "what if"** | Local 8B | Simple math |
-| **Lead analysis** | **Cloud API** | Needs reasoning |
-| **Job estimation (complex)** | **Cloud API** | Multi-variable |
-| **Market intelligence** | **Cloud API** | Analysis + web |
-| **Forecasting** | **Cloud API** | Statistical reasoning |
+### 1. AI Integration (Simple)
 
----
+```typescript
+// src/franklin/ai/client.ts
+import Anthropic from '@anthropic-ai/sdk';
 
-## Cost Analysis (Revised)
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
-### Scenario: 1,000 queries/month
+export async function chat(
+  query: string,
+  context: string,
+  options?: { model?: 'haiku' | 'sonnet' }
+) {
+  const model = options?.model === 'sonnet'
+    ? 'claude-sonnet-4-20250514'
+    : 'claude-3-5-haiku-20241022';
 
-| Split | Local Cost | Cloud Cost | Total |
-|-------|------------|------------|-------|
-| 100% cloud | $0 | $30-100 | $30-100 |
-| 85% local / 15% cloud | ~$8-12 | $5-15 | **$13-27** |
-| 100% local (8B only) | ~$8-12 | $0 | $8-12* |
+  const response = await anthropic.messages.create({
+    model,
+    max_tokens: 1024,
+    system: `You are an AI assistant for Franklin Machine Co., a steel fabrication shop.
+You have access to their inventory, jobs, and business data.
+Answer questions directly and concisely. Reference specific items by SKU.
+Format numbers appropriately (currency, quantities).
 
-*Quality suffers on complex queries
+CURRENT DATA:
+${context}`,
+    messages: [{ role: 'user', content: query }],
+  });
 
-### Power Consumption (Revised for 8-core)
-
-```
-2080 Ti under load: ~250W
-AMD Ryzen 5 under load: ~65W (vs 280W for 58-core)
-System overhead: ~50W
-
-Total during inference: ~365W (was 580W)
-Idle: ~80W (was 150W)
-
-Monthly estimate (8 hrs/day active):
-- Active: 365W × 8h × 30 days = 87.6 kWh
-- Idle: 80W × 16h × 30 days = 38.4 kWh
-- Total: ~126 kWh
-- Cost: ~$15-20/month (at $0.12-0.15/kWh)
+  return response.content[0].type === 'text'
+    ? response.content[0].text
+    : '';
+}
 ```
 
-Actually **cheaper to run** than the 58-core system!
+### 2. Context Builder (RAG)
 
----
+```typescript
+// src/franklin/ai/context.ts
+export async function buildContext(query: string, db: Database): Promise<string> {
+  const sections: string[] = [];
 
-## Revised Efficiency Verdict
+  // Always include recent activity
+  const recentTransactions = await db.query(`
+    SELECT t.created_at, u.name as user, i.name as item,
+           t.transaction_type, t.quantity, t.note
+    FROM inventory_transactions t
+    JOIN users u ON t.user_id = u.id
+    JOIN inventory_items i ON t.item_id = i.id
+    ORDER BY t.created_at DESC
+    LIMIT 10
+  `);
+  sections.push(`## Recent Activity\n${formatTable(recentTransactions)}`);
 
-| Use Case | Self-Host Viability | Recommendation |
-|----------|---------------------|----------------|
-| **Low volume (<300/mo)** | Overkill | Cloud only (~$10-30) |
-| **Medium (300-2000/mo)** | Good hybrid | Local + cloud fallback |
-| **High volume (2000+/mo)** | Good for simple queries | Local primary, cloud complex |
-| **Privacy-critical** | Works for simple queries | Accept quality tradeoff |
-| **Need complex analysis** | Not viable locally | Must use cloud |
+  // Include inventory if relevant
+  if (/stock|inventory|item|material|quantity/i.test(query)) {
+    const inventory = await db.query(`
+      SELECT sku, name, quantity, unit, location,
+             CASE WHEN quantity <= min_quantity THEN 'LOW' ELSE 'OK' END as status
+      FROM inventory_items
+      ORDER BY name
+      LIMIT 50
+    `);
+    sections.push(`## Current Inventory\n${formatTable(inventory)}`);
+  }
 
----
+  // Include jobs if relevant
+  if (/job|project|customer|estimate/i.test(query)) {
+    const jobs = await db.query(`
+      SELECT j.job_number, j.name, c.name as customer, j.status, j.quoted_amount
+      FROM jobs j
+      LEFT JOIN customers c ON j.customer_id = c.id
+      WHERE j.status IN ('quoted', 'active')
+    `);
+    sections.push(`## Active Jobs\n${formatTable(jobs)}`);
+  }
 
-## Recommended Strategy for Franklin
+  // Include leads if relevant
+  if (/lead|prospect|inquiry|potential/i.test(query)) {
+    const leads = await db.query(`
+      SELECT company_name, contact_name, source, status, estimated_value, created_at
+      FROM leads
+      WHERE status NOT IN ('won', 'lost')
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+    sections.push(`## Open Leads\n${formatTable(leads)}`);
+  }
 
-### Option A: Hybrid (Recommended)
-
-```
-Local (Ollama + Llama 3.1 8B):
-├── Handles 85% of queries
-├── Inventory lookups: instant
-├── Transaction queries: instant
-├── Simple questions: 2-3 seconds
-└── Cost: ~$15-20/month electricity
-
-Cloud (Claude 3.5 Haiku or GPT-4o-mini):
-├── Handles 15% of queries
-├── Lead analysis: 2-3 seconds
-├── Complex estimation: 2-3 seconds
-├── Market intelligence: 3-5 seconds
-└── Cost: ~$5-25/month API
-
-Total: $20-45/month for full AI capability
-```
-
-### Option B: Cloud-Primary (Simpler)
-
-```
-Cloud (Claude 3.5 Haiku):
-├── Handles 100% of queries
-├── Consistent 1-3 second responses
-├── No local maintenance
-└── Cost: ~$30-100/month
-
-Use local for:
-├── Embeddings only (for semantic search)
-└── Privacy-sensitive queries (rare)
-```
-
-### Option C: Local-Only (Budget)
-
-```
-Local (Llama 3.1 8B Q5_K_M):
-├── Handles all queries locally
-├── Simple queries: excellent
-├── Complex queries: "good enough"
-└── Cost: ~$15-20/month electricity
-
-Tradeoff:
-├── Lead analysis less sophisticated
-├── No web-based market intelligence
-└── Complex reasoning limited
+  return sections.join('\n\n');
+}
 ```
 
----
+### 3. Local Embeddings (Optional but Recommended)
 
-## Setup Instructions
+```typescript
+// src/franklin/ai/embeddings.ts
+const OLLAMA_URL = 'http://localhost:11434';
 
-### Quick Start (Option A - Hybrid)
+export async function getEmbedding(text: string): Promise<number[]> {
+  const response = await fetch(`${OLLAMA_URL}/api/embeddings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'nomic-embed-text',
+      prompt: text,
+    }),
+  });
+
+  const data = await response.json();
+  return data.embedding;
+}
+
+export async function semanticSearch(
+  query: string,
+  items: Array<{ id: number; text: string; embedding: number[] }>,
+  topK: number = 5
+): Promise<Array<{ id: number; score: number }>> {
+  const queryEmbedding = await getEmbedding(query);
+
+  const scored = items.map(item => ({
+    id: item.id,
+    score: cosineSimilarity(queryEmbedding, item.embedding),
+  }));
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK);
+}
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+```
+
+### 4. Setup Script
 
 ```bash
-# 1. Install Ollama
-curl -fsSL https://ollama.com/install.sh | sh
+#!/bin/bash
+# setup-franklin-ai.sh
 
-# 2. Pull 8B model (fits entirely on GPU)
-ollama pull llama3.1:8b-instruct-q5_K_M
+echo "Setting up Franklin AI Platform..."
 
-# 3. Optional: Pull 14B for slightly smarter responses (slower)
-ollama pull phi3:14b-medium-4k-instruct-q4_K_M
+# 1. Install Ollama (for embeddings only)
+if ! command -v ollama &> /dev/null; then
+  echo "Installing Ollama..."
+  curl -fsSL https://ollama.com/install.sh | sh
+fi
 
-# 4. Pull embeddings model for semantic search
+# 2. Pull embeddings model (small, ~300MB)
+echo "Pulling embeddings model..."
 ollama pull nomic-embed-text
 
-# 5. Verify GPU is being used
-ollama run llama3.1:8b-instruct-q5_K_M "Hello" --verbose
-# Should show "using GPU" in output
-```
+# 3. Start Ollama service
+echo "Starting Ollama..."
+ollama serve &
 
-### Application Config
+# 4. Verify
+echo "Testing embeddings..."
+curl -s http://localhost:11434/api/embeddings \
+  -d '{"model": "nomic-embed-text", "prompt": "test"}' | head -c 100
 
-```typescript
-// src/franklin/ai/config.ts
-export const AI_CONFIG = {
-  local: {
-    endpoint: 'http://localhost:11434',
-    model: 'llama3.1:8b-instruct-q5_K_M',
-    embedding: 'nomic-embed-text',
-  },
-
-  cloud: {
-    provider: 'anthropic',
-    model: 'claude-3-5-haiku-20241022',
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  },
-
-  routing: {
-    // Queries matching these patterns → local
-    local: [
-      /who (took|used|removed)/i,
-      /what.*(in stock|do we have|inventory)/i,
-      /how many/i,
-      /list .*(items|transactions|jobs)/i,
-      /summarize/i,
-      /format|write.*(invoice|note)/i,
-    ],
-    // Everything else → cloud
-    cloud: [
-      /analyze/i,
-      /estimate.*worth/i,
-      /should (we|I)/i,
-      /market|trend|forecast/i,
-      /research/i,
-      /complex|calculate.*if/i,
-    ],
-  },
-};
-```
-
-### Smart Router Implementation
-
-```typescript
-// src/franklin/ai/router.ts
-export function routeQuery(query: string): 'local' | 'cloud' {
-  // Check for cloud patterns first (more specific)
-  for (const pattern of AI_CONFIG.routing.cloud) {
-    if (pattern.test(query)) return 'cloud';
-  }
-
-  // Check for local patterns
-  for (const pattern of AI_CONFIG.routing.local) {
-    if (pattern.test(query)) return 'local';
-  }
-
-  // Default: try local first, it's free
-  return 'local';
-}
-
-export async function executeQuery(query: string, context: string) {
-  const route = routeQuery(query);
-
-  if (route === 'local') {
-    try {
-      return await localInference(query, context);
-    } catch (error) {
-      console.warn('Local inference failed, falling back to cloud');
-      return await cloudInference(query, context);
-    }
-  }
-
-  return await cloudInference(query, context);
-}
+echo ""
+echo "Setup complete!"
+echo "- Embeddings: Local (Ollama)"
+echo "- AI Chat: Cloud (set ANTHROPIC_API_KEY)"
 ```
 
 ---
 
-## Performance Expectations (Realistic)
+## Feature Implementation with Cloud AI
 
-### Single User Experience
+### Conversational Business Intelligence
 
-| Query Type | Engine | Response Time | Quality |
-|------------|--------|---------------|---------|
-| "Who took the W8?" | Local 8B | 2-4 seconds | Good |
-| "What's low stock?" | Local 8B | 2-4 seconds | Good |
-| "Summarize this week" | Local 8B | 4-6 seconds | Good |
-| "Analyze this lead" | Cloud | 2-3 seconds | Excellent |
-| "Estimate this job" | Cloud | 3-5 seconds | Excellent |
+```typescript
+// Example queries and expected behavior
 
-### Multi-User (Shop Floor)
+// Simple lookup → Haiku, fast, cheap
+"Who took the last W8 beam?"
+→ Context: recent transactions
+→ Response: "John Smith took 2 W8x31 beams yesterday at 3:42 PM for the Henderson project."
 
-| Concurrent Users | Local 8B Throughput | Latency |
-|------------------|---------------------|---------|
-| 1 | ~25-35 tok/s | 2-4s |
-| 2 | ~15-20 tok/s each | 4-6s |
-| 3+ | Starts queuing | 6-10s |
+// Complex analysis → Still Haiku (it's good enough)
+"Should we take this lead? They want a warehouse expansion, budget around $50K"
+→ Context: leads, jobs, inventory
+→ Response: "Based on your current inventory and capacity:
+   - You have sufficient beam stock for a project this size
+   - Similar jobs (Henderson, Martinez) averaged 18% margin
+   - Current lead pipeline is light, so capacity is available
+   Recommendation: Worth pursuing. Request detailed specs for accurate quote."
 
-**For a small shop (3-5 people asking occasional questions), this is fine.**
+// Market intelligence → Haiku + web context (future feature)
+"What's happening with steel prices?"
+→ Would need web search integration (Phase 2)
+→ For now: "I don't have real-time market data. Check [steel price index source]."
+```
+
+### Smart Lead Analysis
+
+```typescript
+// src/franklin/ai/leads.ts
+export async function analyzeLeadWithAI(lead: Lead, db: Database): Promise<LeadAnalysis> {
+  const context = await buildContext(`analyze lead ${lead.company_name}`, db);
+
+  const prompt = `Analyze this potential lead for a steel fabrication shop:
+
+Company: ${lead.company_name}
+Contact: ${lead.contact_name}
+Project Description: ${lead.project_description}
+Estimated Value: ${lead.estimated_value ? `$${lead.estimated_value}` : 'Unknown'}
+Source: ${lead.source}
+
+Based on the shop's current inventory, active jobs, and historical data, provide:
+1. Job complexity estimate (simple/moderate/complex)
+2. Likely materials needed
+3. Estimated timeline
+4. Potential margin (based on similar past jobs)
+5. Recommendation (pursue/pass/need more info)
+
+Be concise and specific.`;
+
+  const analysis = await chat(prompt, context);
+
+  return {
+    leadId: lead.id,
+    analysis,
+    generatedAt: new Date().toISOString(),
+  };
+}
+```
+
+### Intelligent Invoicing
+
+```typescript
+// src/franklin/ai/invoicing.ts
+export async function generatePriceAdjustmentNote(
+  percentageIncrease: number,
+  reason: string
+): Promise<string> {
+  const prompt = `Write a brief, professional note explaining a ${percentageIncrease}% price adjustment on an invoice.
+
+Reason: ${reason}
+
+The note should be:
+- 1-2 sentences
+- Professional but not stiff
+- Clear about the reason
+- Appropriate for a steel fabrication customer
+
+Just output the note text, nothing else.`;
+
+  return await chat(prompt, '', { model: 'haiku' });
+}
+
+// Example output:
+// "Due to recent steel tariff increases effective March 1st, a 6% materials
+//  adjustment has been applied to this invoice. We appreciate your understanding."
+```
 
 ---
 
-## Summary: What Changed with 8 Cores
+## What You're Getting
 
-| Aspect | 58-Core Assumption | 8-Core Reality |
-|--------|-------------------|----------------|
-| CPU inference | Viable for 32B+ | Not viable |
-| Hybrid offloading | Effective | Marginal benefit |
-| Primary strategy | Local everything | Local simple + cloud complex |
-| Model ceiling | 70B hybrid | 8-14B GPU only |
-| Monthly cost | $25-35 | $20-45 (including cloud) |
-| Complex queries | Local 32B | Must use cloud |
+| Feature | Implementation | Cost |
+|---------|----------------|------|
+| **Chat interface** | Claude API | ~$0.01-0.05/query |
+| **Lead analysis** | Claude API | ~$0.02-0.08/analysis |
+| **Invoice text** | Claude API | ~$0.005/generation |
+| **Semantic search** | Local embeddings | Free |
+| **Market intelligence** | Future (needs web) | TBD |
 
-### Final Recommendation
+---
 
-**Go hybrid:**
-1. **Local 8B** for 85% of queries (inventory, transactions, simple Q&A)
-2. **Cloud API** for 15% of queries (analysis, estimation, market intel)
-3. **Total cost:** ~$25-45/month
-4. **User experience:** Fast for common tasks, excellent for complex ones
+## Summary
 
-Your hardware is still useful — the 2080 Ti runs 8B models at excellent speeds. You just can't self-host the heavy reasoning locally. That's what cloud APIs are for.
+**Approach:** Cloud AI + Local Embeddings + Local Hosting
+
+**Why this is pragmatic:**
+1. **Simpler** — No local model management, no GPU drivers, no VRAM juggling
+2. **More reliable** — Claude's uptime > your home server's uptime
+3. **Better quality** — Haiku beats local 8B for complex reasoning
+4. **Affordable** — $40-80/month for AI is noise against platform pricing
+5. **Still saves money** — Local hosting + embeddings saves $55-120/month
+
+**Your hardware's role:**
+- Hosts the entire application (saves cloud hosting costs)
+- Runs embeddings locally (saves API costs, better privacy)
+- Development and testing playground
+
+**Total monthly cost:** ~$40-80 (just AI API)
+**vs fully cloud-hosted:** ~$150-250
