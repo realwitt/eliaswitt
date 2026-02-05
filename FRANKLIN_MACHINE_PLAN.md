@@ -575,118 +575,197 @@ CREATE TABLE lead_activities (
 ## Phase 4: AI Intelligence Suite ($3,000/mo tier)
 **Goal:** AI-powered insights, analysis, and automation
 
-### 4.1 AI Infrastructure
-- [ ] **AI Provider Integration**
-  - OpenAI API integration (or Claude API)
-  - API key management
-  - Usage tracking
-  - Cost monitoring
+### Architecture Decision: Cloud-First AI
 
-- [ ] **Context Builder**
-  - System that assembles relevant data for AI queries
-  - Inventory context
-  - Job context
-  - Customer context
-  - Historical data summaries
+**Why cloud-only for LLM inference:**
+- Simpler — No local model management, GPU drivers, or VRAM juggling
+- More reliable — Claude's 99.9% uptime > home server uptime
+- Better quality — Claude Haiku beats local 8B models for reasoning
+- Affordable — $40-80/month is noise against $3,000/month tier pricing
+
+**Local only for:** Embeddings (semantic search) — small model, instant, free
+
+**Estimated AI costs:** $40-80/month for 2,000-5,000 queries
+
+### 4.1 AI Infrastructure
+- [ ] **Claude API Integration**
+  - Install `@anthropic-ai/sdk`
+  - API key management (environment variable)
+  - Usage tracking dashboard
+  - Cost monitoring per feature
+
+- [ ] **Context Builder (RAG)**
+  - Build context from SQLite based on query intent
+  - Include relevant: transactions, inventory, jobs, leads
+  - Token-efficient formatting
+  - Limit context to most relevant data
+
+- [ ] **Local Embeddings (Optional)**
+  - Ollama + `nomic-embed-text` (~300MB)
+  - Powers semantic search across inventory
+  - Store embeddings in SQLite
+  - Zero ongoing cost
 
 ### 4.2 Conversational Business Intelligence
 - [ ] **Chat Interface**
-  - Natural language input
-  - Query history
-  - Suggested questions
+  - Clean input with send button
+  - Streaming responses
+  - Query history (stored locally)
+  - Suggested questions based on context
 
-- [ ] **Query Understanding**
-  - Parse natural language to data queries
-  - Handle questions like:
-    - "Who took the last W8 beam?"
-    - "What's our margin on fabrication jobs this quarter?"
-    - "Which supplier has best prices on channel steel?"
-    - "How much did we spend on materials for Henderson project?"
+- [ ] **Query Examples**
+  ```
+  "Who took the last W8 beam?"
+  → Context: recent transactions
+  → Response in 1-2 seconds
 
-- [ ] **Response Generation**
-  - Clear, formatted answers
-  - Include relevant data tables
-  - Link to detailed views
+  "What's our margin on fabrication jobs this quarter?"
+  → Context: jobs with costs
+  → Response with breakdown
 
-- [ ] **Common Query Shortcuts**
-  - Pre-built queries for common questions
-  - One-click access
+  "Which supplier has best prices on channel steel?"
+  → Context: supplier_items table
+  → Comparison table
+  ```
+
+- [ ] **Response Formatting**
+  - Markdown rendering
+  - Data tables when appropriate
+  - Links to relevant detail pages
+  - Copy-able values
 
 ### 4.3 Smart Lead Analysis
-- [ ] **Auto Lead Research**
-  - When lead comes in, AI researches:
-    - Company background (if available)
-    - Industry
-    - Estimated project scope
+- [ ] **One-Click Lead Analysis**
+  - Button on lead detail page
+  - AI analyzes based on:
+    - Project description
+    - Similar past jobs
+    - Current inventory
+    - Capacity (active jobs)
 
-- [ ] **Job Potential Estimation**
-  - Analyze project description
-  - Estimate complexity
-  - Suggest timeline
-  - Predict inventory needs
+- [ ] **Analysis Output**
+  ```
+  Complexity: Moderate
+  Estimated materials: $8,500
+  Timeline: 2-3 weeks
+  Projected margin: 18-22% (based on similar jobs)
+  Inventory status: 80% materials in stock
+  Recommendation: Worth pursuing
+  ```
 
-- [ ] **Margin Estimation**
-  - Calculate potential materials cost
-  - Estimate labor (configurable rates)
-  - Show projected profit
+- [ ] **Auto-Save Analysis**
+  - Store AI analysis with lead
+  - Show analysis date
+  - Re-analyze button
 
-- [ ] **Lead Summary Card**
-  - AI-generated brief
-  - Key insights highlighted
-  - Recommended next steps
+### 4.4 Market Intelligence (Future/Optional)
+- [ ] **Manual Price Tracking**
+  - Input current steel prices manually
+  - Track over time
+  - Show trends
 
-### 4.4 Market Intelligence
-- [ ] **News Feed Integration**
-  - Steel industry news aggregation
-  - Tariff announcements
-  - Supply chain alerts
+- [ ] **AI Price Impact Analysis**
+  - "If steel goes up 10%, how does that affect open quotes?"
+  - Calculate impact on inventory value
+  - Suggest quote adjustments
 
-- [ ] **Price Trend Monitoring**
-  - Track steel price indices
-  - Historical comparison
-  - Trend visualization
-
-- [ ] **AI Alerts**
-  - "Steel prices expected to rise 5% next month"
-  - "New tariffs announced affecting imports"
-  - Source links for verification
-
-- [ ] **Impact Analysis**
-  - "This affects your inventory by X%"
-  - "Consider adjusting quotes"
+*Note: Real-time market data would require additional API integrations (future phase)*
 
 ### 4.5 Intelligent Invoicing
-- [ ] **Price Adjustment Suggestions**
-  - When costs rise, suggest adjustment
-  - Calculate percentage impact
-  - Show affected invoices
+- [ ] **AI-Written Adjustment Notes**
+  ```typescript
+  // One function call
+  const note = await generatePriceAdjustmentNote(6, "steel tariff increase");
+  // Returns: "Due to recent steel tariff increases effective March 1st,
+  //           a 6% materials adjustment has been applied to this invoice."
+  ```
 
-- [ ] **AI-Written Explanations**
-  - Generate professional adjustment language
-  - "Due to steel tariff increases effective March 1st..."
-  - Multiple tone options
+- [ ] **Tone Options**
+  - Professional (default)
+  - Friendly
+  - Formal
 
-- [ ] **Goodwill Tracking**
-  - "We absorbed $X in cost increases"
-  - Customer relationship notes
+- [ ] **Goodwill Language**
+  - "We absorbed $X in cost increases on your behalf"
+  - Customer appreciation notes
 
-### 4.6 Job Estimation & Forecasting
-- [ ] **Quick Estimate Calculator**
-  - AI-assisted job quoting
-  - Material requirements
-  - Current inventory availability
-  - Current supplier prices
+### 4.6 Job Estimation
+- [ ] **Quick Estimate from Chat**
+  ```
+  User: "Quick estimate for a 20x30 steel carport"
+  AI: Based on similar jobs and current inventory:
+      - Materials: ~$3,200 (beams, plate, hardware)
+      - Labor estimate: 24-32 hours
+      - Suggested quote: $6,500-$7,500
+      - Current inventory covers: 90%
+      - Need to order: 2x C6 channel (Supplier A: $180)
+  ```
 
-- [ ] **What-If with AI**
-  - "What would this job cost if steel goes up 10%?"
-  - "What if we use supplier B instead?"
+- [ ] **What-If Calculations**
+  - "What if steel goes up 15%?"
+  - "What if we use supplier B?"
+  - "What if we need to rush order materials?"
 
-- [ ] **Smart Forecasting**
-  - AI-predicted usage
-  - Recommended reorder timing
-  - Inventory optimization suggestions
+### 4.7 Implementation Code
 
-**Deliverable:** AI-powered intelligence layer across all system features
+```typescript
+// src/franklin/ai/client.ts
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic();
+
+export async function chat(query: string, context: string) {
+  const response = await anthropic.messages.create({
+    model: 'claude-3-5-haiku-20241022',
+    max_tokens: 1024,
+    system: `You are an AI assistant for Franklin Machine Co., a steel fabrication shop.
+Answer questions directly and concisely using the provided data.
+Reference items by SKU. Format currency and quantities appropriately.
+
+CURRENT DATA:
+${context}`,
+    messages: [{ role: 'user', content: query }],
+  });
+
+  return response.content[0].type === 'text' ? response.content[0].text : '';
+}
+
+// src/franklin/ai/context.ts
+export async function buildContext(query: string, db: Database) {
+  const sections: string[] = [];
+
+  // Always include recent activity
+  const recent = await db.query(`
+    SELECT t.created_at, u.name as user, i.name as item, t.quantity, t.note
+    FROM inventory_transactions t
+    JOIN users u ON t.user_id = u.id
+    JOIN inventory_items i ON t.item_id = i.id
+    ORDER BY t.created_at DESC LIMIT 10
+  `);
+  sections.push(`## Recent Activity\n${formatTable(recent)}`);
+
+  // Add inventory if query mentions stock/items
+  if (/stock|inventory|item|material/i.test(query)) {
+    const items = await db.query(`
+      SELECT sku, name, quantity, unit, location FROM inventory_items LIMIT 50
+    `);
+    sections.push(`## Inventory\n${formatTable(items)}`);
+  }
+
+  // Add jobs if query mentions jobs/projects
+  if (/job|project|customer/i.test(query)) {
+    const jobs = await db.query(`
+      SELECT job_number, name, status, quoted_amount FROM jobs
+      WHERE status IN ('quoted', 'active')
+    `);
+    sections.push(`## Active Jobs\n${formatTable(jobs)}`);
+  }
+
+  return sections.join('\n\n');
+}
+```
+
+**Deliverable:** AI chat interface with lead analysis, job estimation, and invoice text generation
 
 ---
 
@@ -931,7 +1010,9 @@ const steelCategories = [
 
 **Phase 4** is the premium differentiator
 - AI features justify the premium pricing
-- Start simple (chat interface) then expand
+- Cloud-first approach (Claude API) for simplicity
+- Start with chat interface → lead analysis → job estimation
+- ~$40-80/month AI costs (included in $3,000/month tier)
 
 **Phase 5** makes it shippable
 - Polish, test, document
@@ -943,15 +1024,30 @@ const steelCategories = [
 1. **Quick Update Speed** - Can a user adjust inventory in <10 seconds?
 2. **Search Speed** - Can a user find any item in <3 seconds?
 3. **Zero Training** - Can someone use it without instruction?
-4. **Offline Reliability** - Does it work without internet?
+4. **Core Offline Reliability** - Do inventory/jobs work without internet? (AI requires connection)
 5. **Data Integrity** - Are all changes logged and traceable?
+6. **AI Response Time** - Are AI queries answered in <3 seconds?
 
 ---
 
 ## Notes
 
-- **No server requirement** - Everything runs in browser with sql.js
+- **No server requirement** - Core app runs in browser with sql.js
 - **Data persistence** - SQLite database saved to IndexedDB
 - **Portable** - Can export/import database file
-- **Privacy** - All data stays local unless explicitly synced
-- **Future-ready** - Architecture supports future server sync if needed
+- **Privacy** - Inventory/job data stays local; AI queries go to cloud API
+- **AI architecture** - Cloud-first (Claude API) for simplicity and quality
+- **Local embeddings** - Optional Ollama for semantic search (free, private)
+- **Cost structure** - $0 for core app, ~$40-80/month for AI features
+- **Future-ready** - Architecture supports server sync if needed
+
+## Cost Summary
+
+| Component | Monthly Cost |
+|-----------|--------------|
+| Core app (Phases 0-3) | $0 (runs locally) |
+| AI features (Phase 4) | ~$40-80 (Claude API) |
+| Local embeddings | $0 (optional Ollama) |
+| **Total** | **~$40-80/month** |
+
+Compare to fully cloud-hosted SaaS: $150-250/month
