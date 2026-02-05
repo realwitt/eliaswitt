@@ -1,532 +1,374 @@
 # AI Platform Self-Hosting Analysis
 
-## Hardware Specifications
+## Hardware Specifications (Corrected)
 
 | Component | Spec | AI Relevance |
 |-----------|------|--------------|
 | **GPU** | NVIDIA 2080 Ti | 11GB VRAM, ~13.4 TFLOPS FP32, Tensor cores |
-| **RAM** | 64GB DDR4 | Enables CPU inference of larger models |
-| **CPU** | AMD 58-core | Excellent for parallel/batched CPU inference |
+| **RAM** | 64GB DDR4 | Can load large models, but CPU is bottleneck |
+| **CPU** | AMD Ryzen 5 (8-core) | Limited parallelization for CPU inference |
 
 ---
 
-## Model Options by VRAM/RAM Budget
+## The Reality Check
 
-### Tier 1: GPU-Accelerated (11GB VRAM limit)
+**With 8 cores, the GPU is your only viable inference engine for acceptable speeds.**
 
-| Model | Quantization | VRAM Usage | Speed | Quality |
-|-------|--------------|------------|-------|---------|
-| **Llama 3.1 8B** | Q4_K_M | ~5GB | 40-60 tok/s | Good |
-| **Llama 3.1 8B** | Q8_0 | ~9GB | 30-45 tok/s | Better |
-| **Mistral 7B v0.3** | Q4_K_M | ~4.5GB | 50-70 tok/s | Good |
-| **Qwen2.5 7B** | Q4_K_M | ~4.5GB | 50-70 tok/s | Good |
-| **Phi-3 Medium 14B** | Q4_K_M | ~8.5GB | 25-35 tok/s | Very Good |
-| **Llama 3.1 8B Instruct** | Q5_K_M | ~6GB | 35-50 tok/s | Recommended |
+CPU inference scales roughly linearly with core count. Here's what that means:
 
-**Recommendation for GPU:** Llama 3.1 8B Instruct (Q5_K_M) — best balance of speed and quality for your VRAM.
+| Model | 58-core Speed | 8-core Speed | Verdict |
+|-------|---------------|--------------|---------|
+| 70B Q4 | 6-10 tok/s | **0.8-1.4 tok/s** | Unusable (45-75s per response) |
+| 32B Q4 | 12-18 tok/s | **1.6-2.5 tok/s** | Painful (25-40s per response) |
+| 14B Q4 | 20-30 tok/s | **2.7-4 tok/s** | Marginal (15-25s per response) |
 
-### Tier 2: CPU Inference (64GB RAM)
-
-| Model | Quantization | RAM Usage | Speed | Quality |
-|-------|--------------|-----------|-------|---------|
-| **Llama 3.1 70B** | Q4_K_M | ~40GB | 3-8 tok/s | Excellent |
-| **Qwen2.5 32B** | Q4_K_M | ~20GB | 8-15 tok/s | Very Good |
-| **Mixtral 8x7B** | Q4_K_M | ~26GB | 6-12 tok/s | Very Good |
-| **Llama 3.1 70B** | Q3_K_M | ~33GB | 4-10 tok/s | Good |
-| **DeepSeek-V2-Lite** | Q4_K_M | ~18GB | 10-18 tok/s | Good |
-
-**Your 58-core CPU is actually excellent for CPU inference** — llama.cpp and similar frameworks parallelize well across cores.
-
-### Tier 3: Hybrid GPU+CPU Offloading
-
-Split model layers between GPU and CPU:
-
-```
-Example: Llama 3.1 70B Q4_K_M
-- Load 15-20 layers on GPU (using ~10GB VRAM)
-- Remaining 60+ layers on CPU/RAM
-- Result: 8-15 tok/s (2-3x faster than pure CPU)
-```
-
-This is the **sweet spot for your hardware**.
+**Bottom line:** Forget CPU-only inference for anything over 8B parameters.
 
 ---
 
-## Recommended Architecture
+## Revised Model Options
+
+### Your Sweet Spot: GPU-Only (11GB VRAM)
+
+| Model | Quantization | VRAM | Speed | Quality | Use Case |
+|-------|--------------|------|-------|---------|----------|
+| **Llama 3.1 8B** | Q4_K_M | ~5GB | 45-60 tok/s | Good | General queries |
+| **Llama 3.1 8B** | Q5_K_M | ~6GB | 40-50 tok/s | Better | **Recommended** |
+| **Llama 3.1 8B** | Q8_0 | ~9GB | 30-40 tok/s | Best 8B | Quality priority |
+| **Mistral 7B v0.3** | Q5_K_M | ~5GB | 50-65 tok/s | Good | Fast responses |
+| **Qwen2.5 7B** | Q5_K_M | ~5GB | 50-65 tok/s | Good | Good at structured |
+| **Phi-3 Medium 14B** | Q4_K_M | ~8.5GB | 25-35 tok/s | Very Good | Smarter, slower |
+
+### Hybrid GPU+CPU (Marginal Gains)
+
+With only 8 cores, hybrid offloading helps less than you'd hope:
+
+| Model | Config | Speed | Worth It? |
+|-------|--------|-------|-----------|
+| **Qwen2.5 14B** | 28 layers GPU, rest CPU | 12-18 tok/s | Maybe |
+| **Llama 3.1 70B** | 15 layers GPU, rest CPU | 2-4 tok/s | No |
+| **Mixtral 8x7B** | Partial GPU | 4-8 tok/s | Borderline |
+
+**Verdict:** Stick to models that fit entirely on GPU unless you can tolerate 10-20+ second responses.
+
+---
+
+## Revised Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Franklin AI Platform                          │
+│                    (8-core optimized)                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐│
-│  │   Fast Model    │    │  Quality Model  │    │  Embeddings  ││
-│  │   (GPU-bound)   │    │ (Hybrid/CPU)    │    │    Model     ││
-│  │                 │    │                 │    │              ││
-│  │  Llama 3.1 8B   │    │ Qwen2.5 32B or  │    │  BGE-M3 or   ││
-│  │  Q5_K_M         │    │ Llama 3.1 70B   │    │  Nomic-Embed ││
-│  │                 │    │ Q4_K_M          │    │              ││
-│  │  Use for:       │    │  Use for:       │    │  Use for:    ││
-│  │  • Quick chat   │    │  • Lead analysis│    │  • Semantic  ││
-│  │  • Simple Q&A   │    │  • Complex est. │    │    search    ││
-│  │  • Formatting   │    │  • Market intel │    │  • Similar   ││
-│  │                 │    │  • Reasoning    │    │    items     ││
-│  └────────┬────────┘    └────────┬────────┘    └──────┬───────┘│
-│           │                      │                     │        │
-│           └──────────────────────┼─────────────────────┘        │
-│                                  │                              │
-│                    ┌─────────────▼─────────────┐                │
-│                    │      Ollama / vLLM        │                │
-│                    │    (Model Server)         │                │
-│                    └─────────────┬─────────────┘                │
-│                                  │                              │
-│                    ┌─────────────▼─────────────┐                │
-│                    │     Franklin Backend      │                │
-│                    │   (API Gateway + RAG)     │                │
-│                    └─────────────┬─────────────┘                │
-│                                  │                              │
-│                    ┌─────────────▼─────────────┐                │
-│                    │   Franklin Frontend       │                │
-│                    │   (Browser App)           │                │
-│                    └───────────────────────────┘                │
+│  ┌─────────────────────────────┐    ┌──────────────────────────┐│
+│  │      Primary Model          │    │     Cloud Fallback       ││
+│  │      (GPU-bound)            │    │    (Complex queries)     ││
+│  │                             │    │                          ││
+│  │   Llama 3.1 8B Q5_K_M       │    │   Claude 3.5 Haiku or    ││
+│  │   or Phi-3 Medium 14B       │    │   GPT-4o-mini            ││
+│  │                             │    │                          ││
+│  │   Handles:                  │    │   Handles:               ││
+│  │   • Inventory lookups       │    │   • Lead analysis        ││
+│  │   • Simple Q&A              │    │   • Complex estimation   ││
+│  │   • Transaction queries     │    │   • Market intelligence  ││
+│  │   • Invoice formatting      │    │   • Multi-step reasoning ││
+│  │   • Basic forecasting       │    │                          ││
+│  │                             │    │                          ││
+│  │   ~85% of queries           │    │   ~15% of queries        ││
+│  │   FREE                      │    │   ~$0.01-0.05/query      ││
+│  └──────────────┬──────────────┘    └────────────┬─────────────┘│
+│                 │                                 │              │
+│                 └─────────────┬──────────────────┘              │
+│                               │                                  │
+│                 ┌─────────────▼─────────────┐                   │
+│                 │     Smart Router          │                   │
+│                 │  (Classify → Route)       │                   │
+│                 └─────────────┬─────────────┘                   │
+│                               │                                  │
+│                 ┌─────────────▼─────────────┐                   │
+│                 │   Franklin Application    │                   │
+│                 └───────────────────────────┘                   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Feature-to-Model Mapping
+## What Can an 8B Model Actually Do?
 
-| Feature | Model Tier | Why |
-|---------|------------|-----|
-| **Quick inventory questions** | Fast (8B GPU) | Simple lookups, speed matters |
-| "Who took the last W8 beam?" | Fast | Direct DB query generation |
-| "What's in stock?" | Fast | Simple aggregation |
-| **Lead analysis** | Quality (32B+) | Needs reasoning about business |
-| **Job estimation** | Quality | Complex multi-step calculation |
-| **Market intelligence** | Quality | Nuanced analysis of news |
-| **Invoice explanations** | Fast | Template-based writing |
-| **Forecasting** | Quality | Statistical reasoning |
-| **Semantic search** | Embeddings | Vector similarity |
+**Good at (handle locally):**
+- "Who took the last W8 beam?" → Direct DB query, format answer
+- "What's in stock for channel steel?" → Filter and list
+- "How many items are below minimum?" → Aggregation query
+- "Write an invoice note about price increase" → Template generation
+- "Summarize today's transactions" → Data formatting
+- "What did we use on the Henderson job?" → Lookup and format
 
----
+**Struggles with (send to cloud):**
+- "Analyze this lead and estimate if the job is worth taking" → Multi-factor reasoning
+- "Based on market trends, should we stock up on plate steel?" → Complex analysis
+- "What would this job cost if steel goes up 15% and we use supplier B?" → Multi-variable calculation
+- "Research this company and estimate their project scope" → Web search + reasoning
 
-## Software Stack Recommendation
-
-### Option A: Ollama (Simplest)
-
-```bash
-# Install
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Pull models
-ollama pull llama3.1:8b-instruct-q5_K_M    # Fast model (~6GB)
-ollama pull qwen2.5:32b-instruct-q4_K_M    # Quality model (~20GB)
-ollama pull nomic-embed-text               # Embeddings (~300MB)
-
-# Run with GPU layers
-OLLAMA_NUM_GPU=99 ollama serve
-```
-
-**Pros:** Dead simple, auto-manages models, good defaults
-**Cons:** Less control over layer offloading
-
-### Option B: llama.cpp + llama-cpp-python (More Control)
-
-```bash
-# Build with CUDA
-CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python
-
-# Python usage with hybrid offloading
-from llama_cpp import Llama
-
-# Fast model - fully on GPU
-fast_model = Llama(
-    model_path="llama-3.1-8b-instruct.Q5_K_M.gguf",
-    n_gpu_layers=-1,  # All layers on GPU
-    n_ctx=8192,
-)
-
-# Quality model - hybrid
-quality_model = Llama(
-    model_path="qwen2.5-32b-instruct.Q4_K_M.gguf",
-    n_gpu_layers=20,  # 20 layers on GPU, rest on CPU
-    n_ctx=16384,
-    n_threads=48,     # Use most of your 58 cores
-)
-```
-
-**Pros:** Fine-grained control, better hybrid performance
-**Cons:** More setup
-
-### Option C: vLLM (Best for Throughput)
-
-```bash
-pip install vllm
-
-# Serve model
-python -m vllm.entrypoints.openai.api_server \
-    --model meta-llama/Llama-3.1-8B-Instruct \
-    --quantization awq \
-    --gpu-memory-utilization 0.9
-```
-
-**Pros:** Best throughput, OpenAI-compatible API, batching
-**Cons:** More complex, needs specific quantizations
+**The 8B model is actually fine for 80-90% of Franklin's daily queries** — most are lookups, not analysis.
 
 ---
 
-## Performance Estimates for Your Hardware
+## Revised Feature Mapping
 
-### Scenario 1: Single User (You + Franklin)
-
-| Task | Model | Expected Speed | Acceptable? |
-|------|-------|----------------|-------------|
-| Quick question | 8B GPU | 40-50 tok/s | Excellent |
-| Lead analysis | 32B Hybrid | 12-18 tok/s | Good |
-| Complex estimate | 70B Hybrid | 6-10 tok/s | Acceptable |
-
-**Verdict:** Great for single-user. Responses in 2-15 seconds depending on complexity.
-
-### Scenario 2: Small Team (3-5 concurrent users)
-
-| Configuration | Throughput | Latency |
-|---------------|------------|---------|
-| 8B GPU only | 3-5 req/s | <2s |
-| 32B Hybrid | 0.5-1 req/s | 5-15s |
-| Mixed routing | 2-3 req/s | 2-8s avg |
-
-**Verdict:** Works for small team with smart routing (fast model for simple queries).
-
-### Scenario 3: Production (10+ users)
-
-**Not recommended for your hardware.** You'd need:
-- Multiple GPUs, or
-- Cloud burst for peak load, or
-- Queue system with acceptable wait times
+| Feature | Where to Run | Why |
+|---------|--------------|-----|
+| **Inventory questions** | Local 8B | Simple lookups |
+| **Transaction history** | Local 8B | Data formatting |
+| **Invoice text generation** | Local 8B | Template-based |
+| **Stock alerts summary** | Local 8B | Aggregation |
+| **Basic "what if"** | Local 8B | Simple math |
+| **Lead analysis** | **Cloud API** | Needs reasoning |
+| **Job estimation (complex)** | **Cloud API** | Multi-variable |
+| **Market intelligence** | **Cloud API** | Analysis + web |
+| **Forecasting** | **Cloud API** | Statistical reasoning |
 
 ---
 
-## Hybrid Cloud Strategy (Best of Both Worlds)
+## Cost Analysis (Revised)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Request Router                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   Simple queries ──────► Local 8B (GPU)     [FREE]          │
-│   (90% of traffic)       ~50 tok/s                          │
-│                                                              │
-│   Complex analysis ────► Local 32B (Hybrid) [FREE]          │
-│   (8% of traffic)        ~15 tok/s                          │
-│                                                              │
-│   Peak overflow ───────► Claude API         [$0.01-0.03/req]│
-│   (2% of traffic)        Instant                            │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+### Scenario: 1,000 queries/month
 
-Monthly cost estimate:
-- 1000 queries/month, 2% to cloud = 20 API calls
-- ~$0.50-$1.00/month in API costs
-- 98% runs FREE on your hardware
-```
+| Split | Local Cost | Cloud Cost | Total |
+|-------|------------|------------|-------|
+| 100% cloud | $0 | $30-100 | $30-100 |
+| 85% local / 15% cloud | ~$8-12 | $5-15 | **$13-27** |
+| 100% local (8B only) | ~$8-12 | $0 | $8-12* |
 
----
+*Quality suffers on complex queries
 
-## Implementation Plan for Phase 4 (AI Suite)
-
-### Step 1: Local AI Server Setup
-
-```typescript
-// src/franklin/ai/config.ts
-export const AI_CONFIG = {
-  // Local Ollama server
-  localEndpoint: 'http://localhost:11434',
-
-  // Model routing
-  models: {
-    fast: 'llama3.1:8b-instruct-q5_K_M',
-    quality: 'qwen2.5:32b-instruct-q4_K_M',
-    embedding: 'nomic-embed-text',
-  },
-
-  // Fallback to cloud if local fails
-  cloudFallback: {
-    enabled: true,
-    provider: 'anthropic', // or 'openai'
-    model: 'claude-3-haiku-20240307',
-  },
-
-  // Query routing rules
-  routing: {
-    // Use fast model for these intents
-    fast: [
-      'inventory_lookup',
-      'simple_question',
-      'format_text',
-      'invoice_template',
-    ],
-    // Use quality model for these
-    quality: [
-      'lead_analysis',
-      'job_estimation',
-      'market_analysis',
-      'complex_reasoning',
-    ],
-  },
-};
-```
-
-### Step 2: Intent Classification (Route to Right Model)
-
-```typescript
-// src/franklin/ai/router.ts
-const INTENT_PATTERNS = {
-  inventory_lookup: [
-    /who (took|used|removed)/i,
-    /how (much|many) .* (in stock|do we have)/i,
-    /where is/i,
-    /find .* (item|inventory|stock)/i,
-  ],
-  lead_analysis: [
-    /analyze .* lead/i,
-    /what .* (worth|potential|estimate)/i,
-    /should (we|I) (take|quote)/i,
-  ],
-  job_estimation: [
-    /estimate .* (job|project|cost)/i,
-    /how much would .* cost/i,
-    /quote for/i,
-    /materials? (for|needed)/i,
-  ],
-  market_analysis: [
-    /steel (price|market|trend)/i,
-    /tariff/i,
-    /supply chain/i,
-    /forecast/i,
-  ],
-};
-
-export function classifyIntent(query: string): 'fast' | 'quality' {
-  for (const [intent, patterns] of Object.entries(INTENT_PATTERNS)) {
-    if (patterns.some(p => p.test(query))) {
-      return AI_CONFIG.routing.fast.includes(intent) ? 'fast' : 'quality';
-    }
-  }
-  return 'fast'; // Default to fast
-}
-```
-
-### Step 3: RAG Pipeline for Business Context
-
-```typescript
-// src/franklin/ai/rag.ts
-export async function buildContext(query: string, db: Database) {
-  const context: string[] = [];
-
-  // 1. Get relevant inventory items
-  if (query.match(/inventory|stock|item|material/i)) {
-    const items = await db.query(`
-      SELECT name, sku, quantity, location
-      FROM inventory_items
-      WHERE quantity > 0
-      LIMIT 50
-    `);
-    context.push(`Current Inventory:\n${formatTable(items)}`);
-  }
-
-  // 2. Get relevant transactions
-  if (query.match(/who|when|took|used|history/i)) {
-    const transactions = await db.query(`
-      SELECT t.*, u.name as user_name, i.name as item_name
-      FROM inventory_transactions t
-      JOIN users u ON t.user_id = u.id
-      JOIN inventory_items i ON t.item_id = i.id
-      ORDER BY t.created_at DESC
-      LIMIT 20
-    `);
-    context.push(`Recent Transactions:\n${formatTable(transactions)}`);
-  }
-
-  // 3. Get job information
-  if (query.match(/job|project|customer/i)) {
-    const jobs = await db.query(`
-      SELECT j.*, c.name as customer_name
-      FROM jobs j
-      LEFT JOIN customers c ON j.customer_id = c.id
-      WHERE j.status IN ('active', 'quoted')
-    `);
-    context.push(`Active Jobs:\n${formatTable(jobs)}`);
-  }
-
-  return context.join('\n\n---\n\n');
-}
-```
-
-### Step 4: Query Execution
-
-```typescript
-// src/franklin/ai/chat.ts
-export async function chat(
-  query: string,
-  db: Database,
-  options?: { forceModel?: 'fast' | 'quality' }
-) {
-  // 1. Classify intent
-  const modelTier = options?.forceModel ?? classifyIntent(query);
-  const model = AI_CONFIG.models[modelTier];
-
-  // 2. Build context from database
-  const context = await buildContext(query, db);
-
-  // 3. Construct prompt
-  const systemPrompt = `You are an AI assistant for Franklin Machine Co., a steel fabrication shop.
-You have access to their inventory, jobs, and business data.
-Answer questions directly and concisely. Use the data provided.
-If you need to reference specific items, include SKU numbers.
-Format numbers nicely (currency, quantities).
-
-CURRENT DATA:
-${context}`;
-
-  // 4. Call local model
-  try {
-    const response = await fetch(`${AI_CONFIG.localEndpoint}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query },
-        ],
-        stream: false,
-      }),
-    });
-
-    const data = await response.json();
-    return data.message.content;
-
-  } catch (error) {
-    // Fallback to cloud if local fails
-    if (AI_CONFIG.cloudFallback.enabled) {
-      return await cloudFallback(systemPrompt, query);
-    }
-    throw error;
-  }
-}
-```
-
----
-
-## Efficiency Analysis
-
-### Cost Comparison: Self-Hosted vs Cloud
-
-| Metric | Self-Hosted (Your HW) | Cloud (Claude API) |
-|--------|----------------------|-------------------|
-| **Upfront cost** | $0 (already own) | $0 |
-| **Monthly (1K queries)** | ~$10-15 electricity | ~$30-100 |
-| **Monthly (10K queries)** | ~$15-20 electricity | ~$300-1000 |
-| **Latency** | 2-15s | 1-3s |
-| **Privacy** | 100% local | Data leaves network |
-| **Availability** | Depends on your uptime | 99.9% SLA |
-
-### Power Consumption Estimate
+### Power Consumption (Revised for 8-core)
 
 ```
 2080 Ti under load: ~250W
-AMD 58-core under load: ~280W (TDP varies by model)
+AMD Ryzen 5 under load: ~65W (vs 280W for 58-core)
 System overhead: ~50W
 
-Total during inference: ~580W
-Idle: ~150W
+Total during inference: ~365W (was 580W)
+Idle: ~80W (was 150W)
 
 Monthly estimate (8 hrs/day active):
-- Active: 580W × 8h × 30 days = 139 kWh
-- Idle: 150W × 16h × 30 days = 72 kWh
-- Total: ~211 kWh
-- Cost: ~$25-35/month (at $0.12-0.15/kWh)
+- Active: 365W × 8h × 30 days = 87.6 kWh
+- Idle: 80W × 16h × 30 days = 38.4 kWh
+- Total: ~126 kWh
+- Cost: ~$15-20/month (at $0.12-0.15/kWh)
 ```
 
-### Efficiency Verdict
-
-| Use Case | Self-Host Efficiency | Recommendation |
-|----------|---------------------|----------------|
-| **Low volume (<500 queries/mo)** | Overkill | Cloud cheaper |
-| **Medium (500-5000/mo)** | Sweet spot | Self-host |
-| **High volume (5000+/mo)** | Excellent ROI | Self-host |
-| **Privacy-critical** | Essential | Self-host |
-| **24/7 availability needed** | Challenging | Hybrid |
+Actually **cheaper to run** than the 58-core system!
 
 ---
 
-## Recommended Setup for Franklin
+## Revised Efficiency Verdict
 
-### Minimum Viable AI (Start Here)
+| Use Case | Self-Host Viability | Recommendation |
+|----------|---------------------|----------------|
+| **Low volume (<300/mo)** | Overkill | Cloud only (~$10-30) |
+| **Medium (300-2000/mo)** | Good hybrid | Local + cloud fallback |
+| **High volume (2000+/mo)** | Good for simple queries | Local primary, cloud complex |
+| **Privacy-critical** | Works for simple queries | Accept quality tradeoff |
+| **Need complex analysis** | Not viable locally | Must use cloud |
+
+---
+
+## Recommended Strategy for Franklin
+
+### Option A: Hybrid (Recommended)
+
+```
+Local (Ollama + Llama 3.1 8B):
+├── Handles 85% of queries
+├── Inventory lookups: instant
+├── Transaction queries: instant
+├── Simple questions: 2-3 seconds
+└── Cost: ~$15-20/month electricity
+
+Cloud (Claude 3.5 Haiku or GPT-4o-mini):
+├── Handles 15% of queries
+├── Lead analysis: 2-3 seconds
+├── Complex estimation: 2-3 seconds
+├── Market intelligence: 3-5 seconds
+└── Cost: ~$5-25/month API
+
+Total: $20-45/month for full AI capability
+```
+
+### Option B: Cloud-Primary (Simpler)
+
+```
+Cloud (Claude 3.5 Haiku):
+├── Handles 100% of queries
+├── Consistent 1-3 second responses
+├── No local maintenance
+└── Cost: ~$30-100/month
+
+Use local for:
+├── Embeddings only (for semantic search)
+└── Privacy-sensitive queries (rare)
+```
+
+### Option C: Local-Only (Budget)
+
+```
+Local (Llama 3.1 8B Q5_K_M):
+├── Handles all queries locally
+├── Simple queries: excellent
+├── Complex queries: "good enough"
+└── Cost: ~$15-20/month electricity
+
+Tradeoff:
+├── Lead analysis less sophisticated
+├── No web-based market intelligence
+└── Complex reasoning limited
+```
+
+---
+
+## Setup Instructions
+
+### Quick Start (Option A - Hybrid)
 
 ```bash
 # 1. Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
-# 2. Pull just the fast model to start
+# 2. Pull 8B model (fits entirely on GPU)
 ollama pull llama3.1:8b-instruct-q5_K_M
 
-# 3. Test it
-ollama run llama3.1:8b-instruct-q5_K_M "What's 2+2?"
+# 3. Optional: Pull 14B for slightly smarter responses (slower)
+ollama pull phi3:14b-medium-4k-instruct-q4_K_M
 
-# 4. Later, add quality model
-ollama pull qwen2.5:32b-instruct-q4_K_M
+# 4. Pull embeddings model for semantic search
+ollama pull nomic-embed-text
+
+# 5. Verify GPU is being used
+ollama run llama3.1:8b-instruct-q5_K_M "Hello" --verbose
+# Should show "using GPU" in output
 ```
 
-### Production Setup
+### Application Config
 
-```yaml
-# docker-compose.yml for Franklin AI
-version: '3.8'
-services:
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    environment:
-      - OLLAMA_NUM_PARALLEL=4
-      - OLLAMA_MAX_LOADED_MODELS=2
+```typescript
+// src/franklin/ai/config.ts
+export const AI_CONFIG = {
+  local: {
+    endpoint: 'http://localhost:11434',
+    model: 'llama3.1:8b-instruct-q5_K_M',
+    embedding: 'nomic-embed-text',
+  },
 
-volumes:
-  ollama_data:
+  cloud: {
+    provider: 'anthropic',
+    model: 'claude-3-5-haiku-20241022',
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
+
+  routing: {
+    // Queries matching these patterns → local
+    local: [
+      /who (took|used|removed)/i,
+      /what.*(in stock|do we have|inventory)/i,
+      /how many/i,
+      /list .*(items|transactions|jobs)/i,
+      /summarize/i,
+      /format|write.*(invoice|note)/i,
+    ],
+    // Everything else → cloud
+    cloud: [
+      /analyze/i,
+      /estimate.*worth/i,
+      /should (we|I)/i,
+      /market|trend|forecast/i,
+      /research/i,
+      /complex|calculate.*if/i,
+    ],
+  },
+};
+```
+
+### Smart Router Implementation
+
+```typescript
+// src/franklin/ai/router.ts
+export function routeQuery(query: string): 'local' | 'cloud' {
+  // Check for cloud patterns first (more specific)
+  for (const pattern of AI_CONFIG.routing.cloud) {
+    if (pattern.test(query)) return 'cloud';
+  }
+
+  // Check for local patterns
+  for (const pattern of AI_CONFIG.routing.local) {
+    if (pattern.test(query)) return 'local';
+  }
+
+  // Default: try local first, it's free
+  return 'local';
+}
+
+export async function executeQuery(query: string, context: string) {
+  const route = routeQuery(query);
+
+  if (route === 'local') {
+    try {
+      return await localInference(query, context);
+    } catch (error) {
+      console.warn('Local inference failed, falling back to cloud');
+      return await cloudInference(query, context);
+    }
+  }
+
+  return await cloudInference(query, context);
+}
 ```
 
 ---
 
-## Summary
+## Performance Expectations (Realistic)
 
-**Your hardware is well-suited for self-hosting the AI platform:**
+### Single User Experience
 
-| Component | Assessment |
-|-----------|------------|
-| 2080 Ti (11GB) | Good for 7-14B models at excellent speed |
-| 64GB DDR4 | Enables 32B models comfortably, 70B tight |
-| 58-core CPU | Excellent for CPU inference, parallelizes well |
+| Query Type | Engine | Response Time | Quality |
+|------------|--------|---------------|---------|
+| "Who took the W8?" | Local 8B | 2-4 seconds | Good |
+| "What's low stock?" | Local 8B | 2-4 seconds | Good |
+| "Summarize this week" | Local 8B | 4-6 seconds | Good |
+| "Analyze this lead" | Cloud | 2-3 seconds | Excellent |
+| "Estimate this job" | Cloud | 3-5 seconds | Excellent |
 
-**Recommended configuration:**
-1. **Fast model (GPU):** Llama 3.1 8B Q5_K_M — handles 90% of queries
-2. **Quality model (Hybrid):** Qwen2.5 32B Q4_K_M — complex analysis
-3. **Smart routing:** Classify intent, route to appropriate model
-4. **Cloud fallback:** 2% of queries to Claude API for edge cases
+### Multi-User (Shop Floor)
 
-**Expected performance:**
-- Simple queries: 1-3 seconds
-- Complex analysis: 5-15 seconds
-- Monthly cost: ~$25-35 electricity vs $100+ cloud
+| Concurrent Users | Local 8B Throughput | Latency |
+|------------------|---------------------|---------|
+| 1 | ~25-35 tok/s | 2-4s |
+| 2 | ~15-20 tok/s each | 4-6s |
+| 3+ | Starts queuing | 6-10s |
 
-**Start simple:** Install Ollama, pull the 8B model, integrate with Franklin. Add the 32B model later when you need more sophisticated analysis.
+**For a small shop (3-5 people asking occasional questions), this is fine.**
+
+---
+
+## Summary: What Changed with 8 Cores
+
+| Aspect | 58-Core Assumption | 8-Core Reality |
+|--------|-------------------|----------------|
+| CPU inference | Viable for 32B+ | Not viable |
+| Hybrid offloading | Effective | Marginal benefit |
+| Primary strategy | Local everything | Local simple + cloud complex |
+| Model ceiling | 70B hybrid | 8-14B GPU only |
+| Monthly cost | $25-35 | $20-45 (including cloud) |
+| Complex queries | Local 32B | Must use cloud |
+
+### Final Recommendation
+
+**Go hybrid:**
+1. **Local 8B** for 85% of queries (inventory, transactions, simple Q&A)
+2. **Cloud API** for 15% of queries (analysis, estimation, market intel)
+3. **Total cost:** ~$25-45/month
+4. **User experience:** Fast for common tasks, excellent for complex ones
+
+Your hardware is still useful — the 2080 Ti runs 8B models at excellent speeds. You just can't self-host the heavy reasoning locally. That's what cloud APIs are for.
